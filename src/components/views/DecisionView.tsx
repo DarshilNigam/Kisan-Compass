@@ -11,9 +11,10 @@
  * 5. Execution Center & Decision Memory Action Triggers
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useFarm } from '../../context/FarmContext';
+import { computeCanonicalScenarios } from '../../services/economicScenarioEngine';
 import { WhyIntelligenceSheet } from '../decision/WhyIntelligenceSheet';
 import { ExecutionApprovalModal } from '../shell/ExecutionApprovalModal';
 import { ExecutionCenter } from '../shell/ExecutionCenter';
@@ -46,7 +47,8 @@ const sectionVariants = {
 
 export const DecisionView: React.FC = () => {
   const { 
-    state, 
+    state,
+    forecast,
     watchState, 
     acceptUpdatedDecision,
     keepPreviousDecision,
@@ -67,9 +69,15 @@ export const DecisionView: React.FC = () => {
   } = useFarm();
 
   const currentDec = state.currentDecision;
-  const expectedNet = currentDec.expectedFinancials.expectedValueInr;
-  const p10Net = Math.round(expectedNet * 0.95);
-  const p90Net = Math.round(expectedNet * 1.035);
+
+  // Canonical Deterministic Economic Scenarios (HARD INVARIANT: Shared across all cards & timeline)
+  const canonicalScenarios = useMemo(() => {
+    return computeCanonicalScenarios(state, forecast);
+  }, [state, forecast]);
+
+  const expectedNet = canonicalScenarios.scenarioA.netTakeHome;
+  const p10Net = canonicalScenarios.scenarioA.p10NetTakeHome;
+  const p90Net = canonicalScenarios.scenarioA.p90NetTakeHome;
 
   // Modal states
   const [showWhySheet, setShowWhySheet] = useState(false);
@@ -83,7 +91,7 @@ export const DecisionView: React.FC = () => {
 
   // Stress Test Laboratory interactive values
   const optimalMandi = state.market.destinations.find(d => d.isOptimal) || state.market.destinations[0];
-  const defaultFreight = optimalMandi?.estimatedTransportCost ?? Math.round(200 + 25 * 38 + state.estimatedHarvestQuintals * 12);
+  const defaultFreight = canonicalScenarios.scenarioA.freight;
   const [stressRain, setStressRain] = useState<number>(state.weather.rainfallProbability48h || 68);
   const [stressPrice, setStressPrice] = useState<number>(state.market.modalPrice || 2380);
   const [stressYield, setStressYield] = useState<number>(state.estimatedHarvestQuintals || 25);
@@ -96,19 +104,30 @@ export const DecisionView: React.FC = () => {
     setStressFreight(defaultFreight);
   }, [state.weather.rainfallProbability48h, state.market.modalPrice, state.estimatedHarvestQuintals, defaultFreight]);
 
+  // Dynamic reaction to stress test computed using canonical economic engine
+  const stressScenarios = useMemo(() => {
+    const baseP = state.market.modalPrice || 2380;
+    const priceRatio = baseP > 0 ? stressPrice / baseP : 1;
+    const freightRatio = defaultFreight > 0 ? stressFreight / defaultFreight : 1;
+    return computeCanonicalScenarios(
+      {
+        ...state,
+        estimatedHarvestQuintals: stressYield,
+      },
+      forecast,
+      {
+        priceMultiplier: priceRatio,
+        freightMultiplier: freightRatio,
+        rainProbability: stressRain,
+      }
+    );
+  }, [state, forecast, stressPrice, stressFreight, stressYield, stressRain, defaultFreight]);
+
   // Dynamic reaction to stress test
-  const isDecisionFlipped = stressRain < 41 && stressPrice > 2400;
+  const isDecisionFlipped = stressScenarios.scenarioB.netTakeHome > stressScenarios.scenarioA.netTakeHome;
 
-  // Horizon calculations for What-If
-  const horizonOptions = [
-    { day: 0, label: 'Today', desc: 'Sell before rain arrives', net: expectedNet, action: 'Sell now (Best choice)' },
-    { day: 2, label: '+2 Days', desc: 'Rain arrives', net: Math.round(expectedNet * 0.965), action: 'Harvest risky' },
-    { day: 5, label: '+5 Days', desc: 'Wet soil & dockage', net: Math.round(expectedNet * 0.92), action: 'Wait out rain' },
-    { day: 7, label: '+7 Days', desc: 'Post-rain clearance', net: Math.round(expectedNet * 0.945), action: 'Delayed sale' },
-    { day: 14, label: '+14 Days', desc: 'Overripe grain', net: Math.round(expectedNet * 0.88), action: 'Grain shatter loss' },
-  ];
-
-  const activeHorizon = horizonOptions.find(h => h.day === selectedHorizonDay) || horizonOptions[0];
+  const activeHorizon = canonicalScenarios.timingScenarios.find(h => h.daysFromNow === selectedHorizonDay) || canonicalScenarios.scenarioA;
+  const cropDisplayName = activeCropCycle?.crop_name || state.crop || 'crop';
 
   const handleApprove = () => {
     setShowExecutionApprovalModal(true);
@@ -358,7 +377,7 @@ export const DecisionView: React.FC = () => {
             <div className="p-3.5 rounded-2xl bg-[#EAF3EC] space-y-1">
               <div className="text-[11px] text-[#607268] font-medium">Likely take-home</div>
               <div className="text-2xl font-black font-mono text-[#174A32]">
-                ₹{(state.currentDecision.expectedFinancials.expectedValueInr || 74820).toLocaleString('en-IN')}
+                ₹{canonicalScenarios.scenarioA.netTakeHome.toLocaleString('en-IN')}
               </div>
               <div className="text-[11px] text-[#5E9B68] font-bold">Lowest risk · Highest payout</div>
             </div>
@@ -379,18 +398,24 @@ export const DecisionView: React.FC = () => {
                 What if you wait 5 days?
               </h4>
               <p className="text-xs text-[#304238] leading-relaxed pt-1">
-                Allows crop to dry completely, but exposes standing wheat to 48 hours of thunderstorm rain.
+                Allows crop to dry completely, but exposes standing {cropDisplayName} to post-storm soil moisture &amp; grade discount.
               </p>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-[#FAF3E8] space-y-1">
               <div className="text-[11px] text-[#607268] font-medium">Likely take-home</div>
-              <div className="text-2xl font-black font-mono text-[#9A5B18]">₹70,982</div>
-              <div className="text-[11px] text-[#D88732] font-bold">−₹3,838 less due to rain moisture penalty</div>
+              <div className="text-2xl font-black font-mono text-[#9A5B18]">
+                ₹{canonicalScenarios.scenarioB.netTakeHome.toLocaleString('en-IN')}
+              </div>
+              <div className="text-[11px] text-[#D88732] font-bold">
+                {canonicalScenarios.scenarioB.netTakeHome - canonicalScenarios.scenarioA.netTakeHome >= 0 ? '+' : '−'}₹{Math.abs(canonicalScenarios.scenarioB.netTakeHome - canonicalScenarios.scenarioA.netTakeHome).toLocaleString('en-IN')} vs Option A
+              </div>
             </div>
 
             <div className="text-xs text-[#607268] text-center py-1">
-              Mandi cuts 6% price for high moisture wheat
+              {canonicalScenarios.scenarioB.penalties.weatherPenalty > 0
+                ? `Mandi discounts ₹${canonicalScenarios.scenarioB.penalties.weatherPenalty.toLocaleString('en-IN')} for rain moisture`
+                : 'Projected mandi dockage under deferred delivery'}
             </div>
           </div>
 
@@ -402,18 +427,22 @@ export const DecisionView: React.FC = () => {
                 Split harvest (Half &amp; half)
               </h4>
               <p className="text-xs text-[#304238] leading-relaxed pt-1">
-                Harvest 16 quintals immediately; store the remaining 16 quintals in village godown.
+                Harvest {canonicalScenarios.scenarioC.nowQuantity} quintals immediately; store the remaining {canonicalScenarios.scenarioC.laterQuantity} quintals in village godown.
               </p>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-[#F7F4EC] space-y-1">
               <div className="text-[11px] text-[#607268] font-medium">Likely take-home</div>
-              <div className="text-2xl font-black font-mono text-[#17281F]">₹72,400</div>
-              <div className="text-[11px] text-[#607268] font-bold">−₹2,420 less due to double transport</div>
+              <div className="text-2xl font-black font-mono text-[#17281F]">
+                ₹{canonicalScenarios.scenarioC.netTakeHome.toLocaleString('en-IN')}
+              </div>
+              <div className="text-[11px] text-[#607268] font-bold">
+                {canonicalScenarios.scenarioC.netTakeHome - canonicalScenarios.scenarioA.netTakeHome >= 0 ? '+' : '−'}₹{Math.abs(canonicalScenarios.scenarioC.netTakeHome - canonicalScenarios.scenarioA.netTakeHome).toLocaleString('en-IN')} vs Option A
+              </div>
             </div>
 
             <div className="text-xs text-[#607268] text-center py-1">
-              Requires two separate tractor transport trips
+              Requires two separate tractor transport trips (₹{canonicalScenarios.scenarioC.freight.toLocaleString('en-IN')} freight)
             </div>
           </div>
 
@@ -439,18 +468,18 @@ export const DecisionView: React.FC = () => {
           </div>
 
           <div className="text-xs text-[#304238]">
-            Selected: <strong className="text-[#174A32]">{activeHorizon.label} ({activeHorizon.desc})</strong> &rarr; Net: <span className="font-mono font-bold text-[#174A32]">₹{activeHorizon.net.toLocaleString('en-IN')}</span>
+            Selected: <strong className="text-[#174A32]">{activeHorizon.label} ({activeHorizon.desc})</strong> &rarr; Net: <span className="font-mono font-bold text-[#174A32]">₹{activeHorizon.netTakeHome.toLocaleString('en-IN')}</span>
           </div>
         </div>
 
         {/* Large Horizontal Timeline */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {horizonOptions.map((h) => {
-            const isSelected = selectedHorizonDay === h.day;
+          {canonicalScenarios.timingScenarios.map((h) => {
+            const isSelected = selectedHorizonDay === h.daysFromNow;
             return (
               <button
-                key={h.day}
-                onClick={() => setSelectedHorizonDay(h.day)}
+                key={h.daysFromNow}
+                onClick={() => setSelectedHorizonDay(h.daysFromNow)}
                 className={`p-3.5 rounded-2xl text-left transition-all cursor-pointer border ${
                   isSelected
                     ? 'bg-[#174A32] text-white border-[#174A32] shadow-md'
@@ -461,7 +490,7 @@ export const DecisionView: React.FC = () => {
                   {h.label}
                 </div>
                 <div className="text-lg font-black font-mono tracking-tight mt-1">
-                  ₹{h.net.toLocaleString('en-IN')}
+                  ₹{h.netTakeHome.toLocaleString('en-IN')}
                 </div>
                 <div className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-[#DDEFF1] font-medium' : 'text-[#607268]'}`}>
                   {h.action}

@@ -7,6 +7,8 @@ import {
   WhatWouldChangeMyMindResult 
 } from '../types/stressTest';
 
+import { computeCanonicalScenarios } from './economicScenarioEngine';
+
 export const defaultStressTestInputs: StressTestScenarioInputs = {
   rainProbability: 68,
   priceMultiplier: 1.0,
@@ -18,72 +20,56 @@ export const defaultStressTestInputs: StressTestScenarioInputs = {
 /**
  * Deterministic Decision Stress Test Engine
  * Recomputes net-realization, P10/P50/P90, utility, and recommendation under sandboxed perturbations.
- * Zero LLM calculation.
+ * Consumes the single canonical economic scenario engine. Zero LLM calculation.
  */
 export function runDecisionStressTest(
   state: FarmState,
   forecast: ProbabilisticForecast | null,
   scenario: StressTestScenarioInputs = defaultStressTestInputs
 ): StressTestResult {
-  const quantity = state.estimatedHarvestQuintals || 32;
-  const baseGrossPrice = state.market.modalPrice || 2380;
-  const adjustedGrossPrice = Math.round(baseGrossPrice * scenario.priceMultiplier);
-  const recalculatedGrossInr = quantity * adjustedGrossPrice;
+  const canonical = computeCanonicalScenarios(state, forecast, {
+    priceMultiplier: scenario.priceMultiplier,
+    freightMultiplier: scenario.freightMultiplier,
+    rainProbability: scenario.rainProbability,
+  });
 
-  const baseFreight = 1340;
-  const recalculatedFreightInr = Math.round(baseFreight * scenario.freightMultiplier);
+  const immediateNetInr = canonical.scenarioA.netTakeHome;
+  const holdNetInr = canonical.scenarioB.netTakeHome;
+  const splitNetInr = canonical.scenarioC.netTakeHome;
 
-  // Weather penalty calculation
-  let recalculatedWeatherPenaltyInr = 0;
-  if (scenario.rainProbability > 40) {
-    const rainExcess = (scenario.rainProbability - 40) / 100;
-    recalculatedWeatherPenaltyInr = Math.round(recalculatedGrossInr * rainExcess * 0.18);
-  }
+  const recalculatedGrossInr = canonical.scenarioA.grossRevenue;
+  const recalculatedFreightInr = canonical.scenarioA.freight;
+  const recalculatedWeatherPenaltyInr = canonical.scenarioB.penalties.weatherPenalty;
+  const recalculatedSpoilagePenaltyInr = canonical.scenarioB.penalties.spoilagePenalty;
 
-  // Spoilage exposure
-  const recalculatedSpoilagePenaltyInr = scenario.rainProbability > 60 ? Math.round(recalculatedGrossInr * 0.02) : 0;
+  // Day 0 & Day 5 utility calculations
+  const immediateUtility = immediateNetInr - (scenario.simulatedRiskAversion * canonical.scenarioA.downsideExposure);
+  const holdUtility = holdNetInr - (scenario.simulatedRiskAversion * canonical.scenarioB.downsideExposure);
 
-  // Day 0 (Immediate harvest) Net Realization
-  const immediateGross = quantity * adjustedGrossPrice;
-  const immediateNetInr = immediateGross - recalculatedFreightInr;
-
-  // Day 5 (Hold) Net Realization under stress
-  const holdPrice = Math.round((forecast?.quantiles[4]?.p50Price || 2350) * scenario.priceMultiplier);
-  const holdGross = quantity * holdPrice;
-  const holdNetInr = holdGross - recalculatedFreightInr - recalculatedWeatherPenaltyInr - recalculatedSpoilagePenaltyInr;
-
-  // Quantiles calculation
   let p50Net = immediateNetInr;
-  let p10Net = Math.round(p50Net * 0.96);
-  let p90Net = Math.round(p50Net * 1.04);
+  let p10Net = canonical.scenarioA.p10NetTakeHome;
+  let p90Net = canonical.scenarioA.p90NetTakeHome;
 
-  // Determine recommendation based on decision utility: U = E[Net] - (riskAversion * downsideSpread)
   let recalculatedRecommendation: StressTestResult['recalculatedRecommendation'] = 'SELL NOW';
   let isFlipped = false;
-
-  const immediateUtility = immediateNetInr - (scenario.simulatedRiskAversion * (immediateNetInr * 0.04));
-  const holdDownsideSpread = recalculatedWeatherPenaltyInr + (holdNetInr * 0.08);
-  const holdUtility = holdNetInr - (scenario.simulatedRiskAversion * holdDownsideSpread);
 
   if (scenario.rainProbability <= 41 && scenario.priceMultiplier >= 1.02) {
     recalculatedRecommendation = 'WAIT 5 DAYS';
     p50Net = holdNetInr;
-    p10Net = Math.round(p50Net - holdDownsideSpread);
-    p90Net = Math.round(p50Net + (holdGross * 0.06));
+    p10Net = canonical.scenarioB.p10NetTakeHome;
+    p90Net = canonical.scenarioB.p90NetTakeHome;
     isFlipped = true;
   } else if (scenario.rainProbability > 41 && scenario.rainProbability <= 55 && scenario.priceMultiplier >= 1.0) {
     recalculatedRecommendation = 'SPLIT HARVEST';
-    const splitNowNet = (20 * adjustedGrossPrice) - Math.round(recalculatedFreightInr * 0.65);
-    const splitLaterNet = (12 * holdPrice) - Math.round(recalculatedFreightInr * 0.35) - Math.round(recalculatedWeatherPenaltyInr * 0.38);
-    p50Net = splitNowNet + splitLaterNet;
-    p10Net = Math.round(p50Net * 0.94);
-    p90Net = Math.round(p50Net * 1.05);
+    p50Net = splitNetInr;
+    p10Net = canonical.scenarioC.p10NetTakeHome;
+    p90Net = canonical.scenarioC.p90NetTakeHome;
     isFlipped = true;
   } else {
     recalculatedRecommendation = 'SELL NOW';
     p50Net = immediateNetInr;
-    p10Net = Math.round(immediateNetInr * 0.96);
-    p90Net = Math.round(immediateNetInr * 1.03);
+    p10Net = canonical.scenarioA.p10NetTakeHome;
+    p90Net = canonical.scenarioA.p90NetTakeHome;
     isFlipped = false;
   }
 
@@ -106,7 +92,11 @@ export function runDecisionStressTest(
   }
 
   // Calculate What Would Change My Mind
-  const whatWouldChangeMyMind = calculateWhatWouldChangeMyMind(state, baseGrossPrice, quantity, baseFreight);
+  const optimalMandi = state.market.destinations.find(d => d.isOptimal) || state.market.destinations[0];
+  const baseGrossPrice = optimalMandi ? optimalMandi.grossPricePerQuintal : (state.market.modalPrice || 2380);
+  const totalQuantity = Math.max(1, state.estimatedHarvestQuintals > 0 ? state.estimatedHarvestQuintals : 25);
+  const baseFreight = canonical.scenarioA.freight;
+  const whatWouldChangeMyMind = calculateWhatWouldChangeMyMind(state, baseGrossPrice, totalQuantity, baseFreight);
 
   return {
     scenario,

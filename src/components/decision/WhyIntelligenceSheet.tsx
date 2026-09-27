@@ -33,10 +33,14 @@ export const WhyIntelligenceSheet: React.FC<Props> = ({
   const { state } = useFarm();
   if (!isOpen) return null;
 
+  const optimalMandi = state.market.destinations.find(d => d.isOptimal) || state.market.destinations[0];
   const fieldName = state.fieldName || 'Primary Field';
-  const mandiName = state.market.destinations[0]?.name || 'Primary Mandi';
-  const expectedNet = state.currentDecision.expectedFinancials.expectedValueInr || 74820;
+  const mandiName = optimalMandi?.name || 'Primary Mandi';
+  const modalPrice = optimalMandi?.grossPricePerQuintal || state.market.modalPrice || 2380;
+  const expectedNet = state.currentDecision.expectedFinancials.expectedValueInr;
   const rainProb = state.weather.rainfallProbability48h || 68;
+  const cropDisplayName = state.crop || 'crop';
+  const freightCost = optimalMandi?.estimatedTransportCost ?? Math.round(200 + 25 * 38 + state.estimatedHarvestQuintals * 12);
 
   const factors = [
     {
@@ -46,34 +50,34 @@ export const WhyIntelligenceSheet: React.FC<Props> = ({
       weight: 0.38,
       color: 'bg-amber-500',
       icon: CloudRain,
-      detail: 'Convective storm front arrives in 36h. Threatens 18% moisture dockage and lodging penalty (−₹3,838).'
+      detail: `Convective storm front arrives in 36h. Threatens moisture dockage and lodging penalty on standing ${cropDisplayName}.`
     },
     {
       name: 'Mandi Arbitrage Premium',
-      value: 'Unnao Mandi (₹2,380 / Qtl)',
+      value: `${mandiName} (₹${modalPrice.toLocaleString('en-IN')} / Qtl)`,
       impact: 'UPSIDE SUPPORT',
       weight: 0.32,
       color: 'bg-emerald-600',
       icon: TrendingUp,
-      detail: 'Modal quote at Unnao yields +₹920 net realization premium over Kanpur after accounting for freight.'
+      detail: `Modal quote at ${mandiName} yields optimal net realization after accounting for freight.`
     },
     {
       name: 'Crop Biological Maturity',
-      value: '1,845 / 1,950 GDD (94.6%)',
+      value: `${Math.round(state.cropMaturityProgress || 92)}% Biological Readiness`,
       impact: 'AGRONOMIC CLEARANCE',
       weight: 0.18,
       color: 'bg-emerald-700',
       icon: Sprout,
-      detail: 'Thermal maturity reached. Grain moisture verified at 13.2% (APMC Grade A compliant).'
+      detail: `Development stage: ${state.cropStage || 'Ready for harvest'}. Field moisture aligned with mandi standards.`
     },
     {
       name: 'Dedicated Haulage Cost',
-      value: '28 km HGV Route (₹1,340)',
+      value: `${optimalMandi?.distanceKm || 28} km Route (₹${freightCost.toLocaleString('en-IN')})`,
       impact: 'LOGISTICS VERIFIED',
       weight: 0.12,
       color: 'bg-stone-600',
       icon: Truck,
-      detail: 'Tractor trolley committed for immediate transit via NH-27 bypass.'
+      detail: 'Tractor trolley transport committed for transit to destination mandi.'
     }
   ];
 
@@ -167,15 +171,15 @@ export const WhyIntelligenceSheet: React.FC<Props> = ({
               <span className="text-[10px] font-mono font-bold text-amber-900 uppercase block">MAIN PRESSURE</span>
               <div className="font-bold text-amber-950 font-sans">Weather Downside Exposure</div>
               <p className="text-[11px] text-amber-900/90 leading-relaxed font-sans">
-                Holding standing grain past Friday risks 18–26 mm rain, resulting in dockage loss (−₹3,838).
+                Holding standing {cropDisplayName} past the harvest window risks rain-induced dockage loss and quality downgrade.
               </p>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-[#DCEBDA]/60 border border-[#A8C6A5]/80 space-y-1">
               <span className="text-[10px] font-mono font-bold text-[#123D25] uppercase block">MAIN SUPPORT</span>
-              <div className="font-bold text-[#102117] font-sans">Unnao Mandi Realization</div>
+              <div className="font-bold text-[#102117] font-sans">{mandiName} Realization</div>
               <p className="text-[11px] text-[#405048] leading-relaxed font-sans">
-                ₹2,380/qtl spot rate provides ₹74,820 net cash in hand today without storage depreciation.
+                ₹{modalPrice.toLocaleString('en-IN')}/qtl spot rate provides ₹{expectedNet.toLocaleString('en-IN')} net cash in hand today without storage depreciation.
               </p>
             </div>
           </div>
