@@ -71,6 +71,7 @@ export interface CanonicalSplitScenario {
   splitFrictionCost: number;
   totalGrossRevenue: number;
   totalFreight: number;
+  freight: number;
   totalPenalties: number;
   totalStorageCost: number;
   netTakeHome: number;
@@ -351,6 +352,7 @@ export function computeCanonicalScenarios(
     splitFrictionCost,
     totalGrossRevenue,
     totalFreight,
+    freight: totalFreight,
     totalPenalties,
     totalStorageCost,
     netTakeHome: splitNet,

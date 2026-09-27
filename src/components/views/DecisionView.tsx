@@ -442,7 +442,7 @@ export const DecisionView: React.FC = () => {
             </div>
 
             <div className="text-xs text-[#607268] text-center py-1">
-              Requires two separate tractor transport trips (₹{canonicalScenarios.scenarioC.freight.toLocaleString('en-IN')} freight)
+              Requires two separate tractor transport trips (₹{canonicalScenarios.scenarioC.totalFreight.toLocaleString('en-IN')} freight)
             </div>
           </div>
 
