@@ -212,7 +212,7 @@ export const FieldView: React.FC<FieldViewProps> = ({ onNavigateToDecision }) =>
                   {gddProgressPercent}%
                 </div>
                 <div className="text-xs font-bold text-[#5E9B68] tracking-wide">
-                  {state.cropStage === 'Harvest Ready' ? 'Ready for harvest' : state.cropStage === 'Late maturity' ? 'Approaching optimal harvest' : 'In developmental stage'}
+                  {state.cropStage === 'Harvest Ready' || state.cropStage === 'Ready to harvest' ? 'Ready for harvest' : state.cropStage === 'Late maturity' || state.cropStage === 'Nearly ready' ? 'Approaching optimal harvest' : 'In developmental stage'}
                 </div>
                 <p className="text-xs text-[#607268] font-sans leading-relaxed max-w-xs pt-1">
                   Heat accumulation has reached {gddProgressPercent}% of target. Stage: <strong>{state.cropStage}</strong>.

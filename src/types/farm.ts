@@ -1,11 +1,15 @@
 export type CropStage = 
   | 'Just planted'
+  | 'Growing'
   | 'Vegetative' 
   | 'Tillering' 
   | 'Flowering' 
   | 'Grain Fill' 
+  | 'Grain forming'
+  | 'Nearly ready'
   | 'Late maturity' 
   | 'Harvest Ready' 
+  | 'Ready to harvest'
   | 'Harvested'
   | 'Planting date required';
 
