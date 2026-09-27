@@ -102,16 +102,16 @@ flowchart TD
     end
 
     subgraph DataIngestion ["External Data Ingestion Services"]
-        WeatherAPI["Open-Meteo Hyperlocal API\n(Rain, Temp, Humidity, Wind)"]
-        MarketAPI["AGMARKNET / DMI Mandi Service\n(Modal Prices, Arrivals)"]
-        SpatialService["Haversine Logistics Calculator\n(Distance, Fuel, Road Curvature)"]
+        WeatherAPI["Open-Meteo Hyperlocal API<br/>(Rain, Temp, Humidity, Wind)"]
+        MarketAPI["AGMARKNET / DMI Mandi Service<br/>(Modal Prices, Arrivals)"]
+        SpatialService["Haversine Logistics Calculator<br/>(Distance, Fuel, Road Curvature)"]
     end
 
     subgraph DeterministicEngine ["Deterministic Calculation Engine"]
-        Engine_Decide["Decision Engine\n(P10 / P50 / P90 Financial Risk)"]
-        Engine_Harvest["Harvest Optimizer\n(Maturation Decay, Rain Hazard)"]
-        Engine_Market["Net Realization Engine\n(Freight, Handling, Net Realized ₹/Q)"]
-        Engine_Prov["Provenance & Confidence Scorer\n(LIVE_FORECAST / CACHED / BENCHMARK)"]
+        Engine_Decide["Decision Engine<br/>(P10 / P50 / P90 Financial Risk)"]
+        Engine_Harvest["Harvest Optimizer<br/>(Maturation Decay, Rain Hazard)"]
+        Engine_Market["Net Realization Engine<br/>(Freight, Handling, Net Realized Rates)"]
+        Engine_Prov["Provenance & Confidence Scorer<br/>(LIVE_FORECAST / CACHED / BENCHMARK)"]
     end
 
     subgraph Storage ["Database Persistence (Supabase Cloud PostgreSQL)"]
@@ -126,11 +126,11 @@ flowchart TD
     end
 
     subgraph Narrative ["Explainability Layer"]
-        LLM_Explain["Explainability Generator\n(Bilingual English/Hindi Justification)"]
+        LLM_Explain["Explainability Generator<br/>(Bilingual English/Hindi Justification)"]
     end
 
-    UI -->|JWT Bearer Token| SupabaseAuth
-    SupabaseAuth -->|auth.uid()| RLS
+    UI -->|"JWT Bearer Token"| SupabaseAuth
+    SupabaseAuth -->|"auth.uid()"| RLS
     RLS --> Storage
 
     UI --> DataIngestion
