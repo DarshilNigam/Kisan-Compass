@@ -259,6 +259,7 @@ export function buildDecisionProofSequence(
   const postStormPriceP50 = modalPrice + 40;
   const postStormGross = quantity * postStormPriceP50;
   const postStormLoss = Math.round(grossVal * 0.22);
+  const uWait = Math.round((postStormGross - freight) - (riskAversion * postStormLoss));
   const precipMm = state.weather.forecast?.[0]?.precipitationMm || 18;
   const windKmh = state.weather.forecast?.[0]?.windKmh || 24;
 

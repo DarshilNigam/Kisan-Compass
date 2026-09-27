@@ -51,7 +51,8 @@ import {
   loadDecisionLedger, 
   saveDecisionLedger, 
   loadStoredPreferences, 
-  saveStoredPreferences 
+  saveStoredPreferences,
+  seedLongitudinalDecisions 
 } from '../services/decisionRepository';
 import { 
   createInitialFarmWatchState, 
