@@ -33,7 +33,9 @@ export function buildDecisionEvidenceGraph(
   const freightCost = 1340;
   const netRealization = grossValue - freightCost;
   const rainProb = state.weather.rainfallProbability48h || 68;
-  const maturityPct = +(1845 / 1950 * 100).toFixed(1);
+  const targetGdd = state.gddTarget > 0 ? state.gddTarget : 1950;
+  const gddAcc = state.gddAccumulated || 0;
+  const maturityPct = targetGdd > 0 ? +((gddAcc / targetGdd) * 100).toFixed(1) : 0;
 
   const nodes: EvidenceNode[] = [
     // 1. SOURCE NODES
@@ -140,12 +142,12 @@ export function buildDecisionEvidenceGraph(
       id: 'NODE-OBS-GDD',
       type: 'OBSERVATION',
       label: 'Thermal Accumulation (GDD)',
-      value: '1,845 / 1,950 GDD',
+      value: `${gddAcc.toLocaleString()} / ${targetGdd.toLocaleString()} GDD`,
       unit: `${maturityPct}% Mature`,
       source: 'ICAR Station',
       epistemicCategory: 'OBSERVED',
       timestamp: new Date().toISOString(),
-      details: 'Wheat HD-2967 has achieved physiological grain fill (94.6% optimal dry matter).',
+      details: `${state.crop || 'Crop'} ${state.variety ? '(' + state.variety + ')' : ''} has accumulated ${gddAcc} GDD (${maturityPct}% of physiological target).`,
     },
     {
       id: 'NODE-OBS-LOGISTICS',
@@ -156,7 +158,7 @@ export function buildDecisionEvidenceGraph(
       source: 'Transport Union',
       epistemicCategory: 'ESTIMATED',
       timestamp: new Date().toISOString(),
-      details: 'Direct farmgate pickup and transport to Unnao yard (28 km roundtrip).',
+      details: `Direct farmgate pickup and transport to ${state.market.destinations[0]?.name || 'Mandi'} (${state.market.destinations[0]?.distanceKm || 28} km roundtrip).`,
     },
 
     // 3. SIGNAL NODES
@@ -164,12 +166,12 @@ export function buildDecisionEvidenceGraph(
       id: 'NODE-SIG-WEATHER-RISK',
       type: 'SIGNAL',
       label: 'Imminent Storm Lodging & Moisture Risk',
-      value: 'HIGH EXPOSURE',
+      value: rainProb > 50 ? 'HIGH EXPOSURE' : rainProb > 30 ? 'MODERATE RISK' : 'LOW RISK',
       epistemicCategory: 'DERIVED',
       timestamp: new Date().toISOString(),
       actionTarget: 'SHOW_CONFLICT',
       actionPayload: 'WEATHER_VS_MARKET',
-      details: 'Standing wheat crop faces severe lodging, sprouting, and commercial dockage if unharvested.',
+      details: `Standing ${state.crop || 'crop'} faces moisture and potential quality dockage if rainfall occurs prior to harvest.`,
     },
     {
       id: 'NODE-SIG-MARKET-OPP',
@@ -178,16 +180,18 @@ export function buildDecisionEvidenceGraph(
       value: '+₹70/Qtl over Kanpur Yard',
       epistemicCategory: 'DERIVED',
       timestamp: new Date().toISOString(),
-      details: 'Unnao millers are offering higher spot realization for dry wheat.',
+      details: `${state.market.destinations[0]?.name || 'Target Mandi'} millers are offering higher spot realization for dry produce.`,
     },
     {
       id: 'NODE-SIG-MATURITY',
       type: 'SIGNAL',
       label: 'Physiological Harvest Readiness',
-      value: 'COMMERCIALLY READY',
+      value: maturityPct >= 88 ? 'COMMERCIALLY READY' : maturityPct >= 50 ? 'DEVELOPING' : 'EARLY STAGE',
       epistemicCategory: 'DERIVED',
       timestamp: new Date().toISOString(),
-      details: '94.6% maturity allows immediate combine harvesting with zero yield dockage penalty.',
+      details: maturityPct >= 88 
+        ? `${maturityPct}% maturity allows immediate harvesting with zero dockage penalty.`
+        : `${maturityPct}% maturity indicates crop is in ${state.cropStage || 'developmental'} stage. Premature harvesting will trigger severe yield loss.`,
     },
 
     // 4. CALCULATION NODES
@@ -239,19 +243,25 @@ export function buildDecisionEvidenceGraph(
       epistemicCategory: 'DERIVED',
       timestamp: new Date().toISOString(),
       actionTarget: 'SHOW_STRESS_TEST',
-      details: 'Harvest North Plot (Field 07) immediately within the 36h clear window. Dispatch to Unnao Mandi.',
+      details: maturityPct >= 85
+        ? `Harvest ${state.fieldName || 'field'} within the clear window. Dispatch to ${state.market.destinations[0]?.name || 'Mandi'}.`
+        : `Hold standing ${state.crop || 'crop'} on ${state.fieldName || 'field'} until physiological maturity (${state.cropStage || 'growing'}).`,
     },
 
     // 6. ACTION NODE
     {
       id: 'NODE-ACTION',
       type: 'ACTION',
-      label: 'Mobilize Combine & Book Unnao Transport',
-      value: '32 Quintals Field 07',
-      unit: 'Next 36 Hours',
+      label: maturityPct >= 85 
+        ? `Mobilize Harvest & Dispatch to ${state.market.destinations[0]?.name || 'Mandi'}`
+        : `Monitor Growth & Wait for Maturity`,
+      value: `${quantity} Quintals ${state.fieldName || 'Parcel'}`,
+      unit: maturityPct >= 85 ? 'Clear Weather Window' : 'Growth Phase',
       epistemicCategory: 'DERIVED',
       timestamp: new Date().toISOString(),
-      details: 'Clear weather operational window closes Friday 18:00 IST.',
+      details: maturityPct >= 85 
+        ? 'Clear weather operational window closes prior to precipitation.'
+        : `Crop is at ${maturityPct}% physiological maturity. Continuous field monitoring active.`,
     },
 
     // 7. CALIBRATION NODES (STAGE 10)
@@ -364,7 +374,9 @@ export function buildDecisionEvidenceGraph(
     rootSourceIds: ['NODE-SRC-WEATHER', 'NODE-SRC-MARKET', 'NODE-SRC-SOIL', 'NODE-SRC-ROUTING', 'NODE-SRC-FORECAST'],
     decisionNodeId: 'NODE-DECISION',
     actionNodeId: 'NODE-ACTION',
-    summaryNarrative: 'Open-Meteo numerical weather forecasts show a 68% convective rain front, deriving a ₹3,838 storm penalty. In parallel, AGMARKNET reports ₹2,380/qtl at Unnao, netting ₹74,820 after ₹1,340 estimated transport. With crop maturity verified at 94.6% via ICAR GDD model, SELL NOW achieves the highest risk-adjusted utility (72.2).',
+    summaryNarrative: maturityPct >= 85
+      ? `Open-Meteo numerical weather forecasts show a ${rainProb}% rain front. AGMARKNET reports ₹${grossPrice}/qtl, netting ₹${netRealization.toLocaleString('en-IN')} after transport. With crop maturity verified at ${maturityPct}% via agronomic GDD model, SELL NOW achieves the highest risk-adjusted utility.`
+      : `Crop maturity is currently at ${maturityPct}% (${state.cropStage || 'developmental'}). Agronomic model indicates crop is not yet ready for harvest. Holding standing crop on ${state.fieldName || 'field'} is recommended until physiological maturity.`,
   };
 }
 
@@ -402,10 +414,10 @@ export function getAssumptionRegister(
     },
     {
       id: 'ASM-HARVEST-YIELD',
-      label: 'Standing Harvest Quantity (32 Qtl)',
+      label: `Standing Harvest Quantity (${quantity} Qtl)`,
       value: `${quantity} Quintals`,
       category: 'OBSERVED',
-      source: 'Field 07 GPS Area & Historical Yield Calibrator',
+      source: `${state.fieldName || 'Field'} GPS Area & Historical Yield Calibrator`,
       sensitivity: 'LOW',
       decisionImpact: 'Linear scaling across all mandis; does not alter relative utility rankings.',
       whatIfShift: 'Yield variations scale total rupees but maintain SELL NOW optimality.',

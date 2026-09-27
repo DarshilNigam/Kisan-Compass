@@ -45,6 +45,9 @@ export const TrustView: React.FC = () => {
   const p10 = forecast?.quantiles[0]?.p10NetRealization || Math.round(expectedNet * 0.93);
   const p90 = forecast?.quantiles[0]?.p90NetRealization || Math.round(expectedNet * 1.05);
 
+  const targetGdd = state.gddTarget > 0 ? state.gddTarget : 1950;
+  const maturityPct = targetGdd > 0 ? ((state.gddAccumulated / targetGdd) * 100).toFixed(1) : '0';
+
   // Evidence Graph Pipeline Stages
   const evidenceStages = [
     { 
@@ -67,7 +70,7 @@ export const TrustView: React.FC = () => {
       inputs: 'Numerical forecast + benchmark soil profile',
       outputs: 'Field condition snapshot',
       hash: 'sha256-obs:4a192f...d8e',
-      detail: 'Root-zone soil moisture is 28%, convective rain front has 68% chance within 48h, crop readiness is 94.6%.'
+      detail: `Root-zone soil moisture is ${state.soil.moisturePercentage}%, convective rain front has ${state.weather.rainfallProbability48h}% chance within 48h, crop readiness is ${maturityPct}%.`
     },
     { 
       id: 'signal', 
@@ -128,7 +131,7 @@ export const TrustView: React.FC = () => {
 
   // 10-Step Decision Proof Milestones
   const proofSteps = [
-    { num: '01', title: 'Field Twin', detail: `${state.crop} at 94.6% maturity` },
+    { num: '01', title: 'Field Twin', detail: `${state.crop} at ${maturityPct}% maturity (${state.cropStage})` },
     { num: '02', title: 'Weather Forecast', detail: `${state.weather.rainfallProbability48h}% rain risk within 48h` },
     { num: '03', title: 'Mandi Quotes', detail: `${state.market.destinations[0]?.name || 'Mandi'} ₹${state.market.modalPrice} quote verified` },
     { num: '04', title: 'Logistics', detail: `${state.market.destinations[0]?.distanceKm || 28} km tractor haul` },

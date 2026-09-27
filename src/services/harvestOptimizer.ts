@@ -15,13 +15,16 @@ export function evaluateHarvestOptions(
   riskAversion: number = 0.68
 ): CandidateHarvestOption[] {
   const totalQuantity = state.estimatedHarvestQuintals || 32;
-  const unnaoMandi = 'Unnao Mandi (APMC)';
+  const unnaoMandi = state.market.destinations[0]?.name || 'Unnao Mandi (APMC)';
+  const targetGdd = state.gddTarget > 0 ? state.gddTarget : 1950;
+  const maturityPct = targetGdd > 0 ? (state.gddAccumulated / targetGdd) * 100 : 0;
+  const isCropMature = maturityPct >= 85;
 
   const options: CandidateHarvestOption[] = [
     // 1. SELL NOW (100% Immediate Harvest)
     {
       id: 'OPT-SELL-NOW-32',
-      label: '100% Immediate Harvest (32 qtl Now)',
+      label: `100% Immediate Harvest (${totalQuantity} qtl Now)`,
       type: 'SELL_NOW',
       nowQuantityQuintals: totalQuantity,
       laterQuantityQuintals: 0,
@@ -37,8 +40,10 @@ export function evaluateHarvestOptions(
       },
       downsideExposureInr: 3620, // P50 - P10
       utilityScore: +( (74820 - riskAversion * 3620) / 1000 ).toFixed(1),
-      isMathematicallyOptimal: riskAversion >= 0.55,
-      strategicRationale: 'Liquidates 100% of yield within the 36h clear weather window. Eliminates all lodging and grain dockage risk from Saturday thunderstorm.',
+      isMathematicallyOptimal: isCropMature ? riskAversion >= 0.55 : false,
+      strategicRationale: isCropMature
+        ? 'Liquidates 100% of yield within the clear weather window. Eliminates lodging and grain dockage risk from approaching rain.'
+        : `Immediate harvest not recommended: ${state.crop || 'crop'} is only at ${maturityPct.toFixed(0)}% physiological maturity (${state.cropStage || 'developmental'}).`,
     },
 
     // 2. SPLIT HARVEST (20 qtl Now / 12 qtl Later) - Defensive Hedge
@@ -87,10 +92,10 @@ export function evaluateHarvestOptions(
       strategicRationale: 'Equal 50/50 partition between locked cash realization and potential market rebound.',
     },
 
-    // 4. WAIT (100% Speculative Hold - 32 qtl on Day +5)
+    // 4. WAIT (100% Hold / Growth Cycle)
     {
       id: 'OPT-WAIT-32',
-      label: '100% Speculative Hold (32 qtl on Day +5)',
+      label: isCropMature ? '100% Speculative Hold (Harvest on Day +5)' : `Hold Standing ${state.crop || 'Crop'} (Growth & Bulking)`,
       type: 'WAIT',
       nowQuantityQuintals: 0,
       laterQuantityQuintals: totalQuantity,
@@ -106,8 +111,10 @@ export function evaluateHarvestOptions(
       },
       downsideExposureInr: 9700,
       utilityScore: +( (72500 - riskAversion * 9700) / 1000 ).toFixed(1),
-      isMathematicallyOptimal: riskAversion <= 0.35,
-      strategicRationale: 'Delays entire harvest by 5 days. Suffers estimated ₹2,100 storm dockage but fully participates in projected ₹40/qtl spot price rebound.',
+      isMathematicallyOptimal: !isCropMature ? true : riskAversion <= 0.35,
+      strategicRationale: !isCropMature
+        ? `Crop is in developmental stage (${state.cropStage || 'growing'}, ${maturityPct.toFixed(0)}% mature). Holding standing crop is required for physiological maturation and optimal yield.`
+        : 'Delays entire harvest by 5 days. Suffers estimated ₹2,100 storm dockage but fully participates in projected ₹40/qtl spot price rebound.',
     },
   ];
 

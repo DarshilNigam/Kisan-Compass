@@ -1,11 +1,13 @@
 export type CropStage = 
+  | 'Just planted'
   | 'Vegetative' 
   | 'Tillering' 
   | 'Flowering' 
   | 'Grain Fill' 
   | 'Late maturity' 
   | 'Harvest Ready' 
-  | 'Harvested';
+  | 'Harvested'
+  | 'Planting date required';
 
 export type TelemetryStatus = 
   | 'LIVE' 

@@ -40,17 +40,23 @@ export const TrustCenter: React.FC<TrustCenterProps> = ({
   onClose,
   initialTab = 'sources',
 }) => {
-  const { state, snapshot, forecast, toggleApiFailure, setSelectedProvenance, longitudinalDecisions } = useFarm();
+  const { state, snapshot, forecast, toggleApiFailure, setSelectedProvenance, longitudinalDecisions, isDemoMode } = useFarm();
   const [activeTab, setActiveTab] = useState<'sources' | 'confidence' | 'conflicts' | 'assumptions' | 'resilience' | 'calibration' | 'evaluation'>(initialTab);
   const [selectedAssumptionId, setSelectedAssumptionId] = useState<string | null>(null);
 
   const calibrationReport = useMemo(() => {
-    return CalibrationEngine.generateOutcomeReport(seedLongitudinalDecisions);
-  }, []);
+    const decisionsToAudit = (longitudinalDecisions && longitudinalDecisions.length > 0)
+      ? longitudinalDecisions
+      : (isDemoMode ? seedLongitudinalDecisions : []);
+    return CalibrationEngine.generateOutcomeReport(decisionsToAudit);
+  }, [longitudinalDecisions, isDemoMode]);
 
   const evaluationRun = useMemo(() => {
-    return EvaluationEngine.runFullEvaluation(longitudinalDecisions || seedLongitudinalDecisions, 'INCLUDE_DEMO', 1);
-  }, [longitudinalDecisions]);
+    const decisionsToAudit = (longitudinalDecisions && longitudinalDecisions.length > 0)
+      ? longitudinalDecisions
+      : (isDemoMode ? seedLongitudinalDecisions : []);
+    return EvaluationEngine.runFullEvaluation(decisionsToAudit, 'INCLUDE_DEMO', 1);
+  }, [longitudinalDecisions, isDemoMode]);
 
   // Deterministic calculations
   const sources = useMemo(() => {

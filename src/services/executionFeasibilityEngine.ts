@@ -17,7 +17,9 @@ import {
 
 export function evaluateExecutionFeasibility(state: FarmState): ExecutionFeasibilityReport {
   const rainProb = state.weather.rainfallProbability48h;
-  const maturityPct = (state.soil.nitrogenKgHa > 0) ? 94.6 : 90.0; // Grounded in GDD 1845/1950
+  const targetGdd = state.gddTarget > 0 ? state.gddTarget : 1950;
+  const gddAcc = state.gddAccumulated || 0;
+  const maturityPct = targetGdd > 0 ? +((gddAcc / targetGdd) * 100).toFixed(1) : 0;
   const modalPrice = state.market.modalPrice;
   const freightCost = state.market.destinations.find(d => d.name.includes('Unnao'))?.estimatedTransportCost || 1340;
   const distanceKm = state.market.destinations.find(d => d.name.includes('Unnao'))?.distanceKm || 28;
@@ -28,13 +30,19 @@ export function evaluateExecutionFeasibility(state: FarmState): ExecutionFeasibi
       id: 'FACTOR-CROP-MATURITY',
       category: 'CROP_MATURITY',
       name: 'Crop Physiological Maturity',
-      status: maturityPct >= 90 ? 'READY' : 'CAUTION',
-      evidence: `GDD 1845 / 1950 (${maturityPct.toFixed(1)}% complete)`,
-      details: 'Grain fill stage complete. Commercial grade moisture acceptable for immediate harvesting.',
-      source: 'ICAR Benchmark GDD Accumulation Profile',
+      status: maturityPct >= 90 ? 'READY' : maturityPct >= 80 ? 'CAUTION' : 'BLOCKED',
+      evidence: `GDD ${gddAcc.toLocaleString()} / ${targetGdd.toLocaleString()} (${maturityPct.toFixed(1)}% complete)`,
+      details: maturityPct >= 90
+        ? 'Physiological maturity complete. Commercial grade moisture acceptable for immediate harvesting.'
+        : maturityPct >= 80
+        ? `Late maturity stage (${state.cropStage}). Approaching harvest readiness within days.`
+        : `Crop is in developmental stage (${state.cropStage || 'growing'}). Premature cutting will cause severe yield, dry matter, and market dockage loss.`,
+      source: 'ICAR Agronomic GDD Thermal Accumulation Model',
       origin: 'SYSTEM_OBSERVED',
-      isBlocker: false,
-      whatIsNeeded: 'Harvest recommended within next 48h to avoid over-drying and shatter loss.',
+      isBlocker: maturityPct < 80,
+      whatIsNeeded: maturityPct >= 90
+        ? 'Harvest recommended within clear weather window to avoid over-drying and shatter loss.'
+        : 'Wait for physiological maturity. Do not harvest prematurely.',
     },
 
     // 2. Weather Window
@@ -120,7 +128,7 @@ export function evaluateExecutionFeasibility(state: FarmState): ExecutionFeasibi
       source: 'Farm Profile Inventory',
       origin: 'UNVERIFIED',
       isBlocker: false,
-      whatIsNeeded: 'If dispatch is delayed past sunset, ensure waterproof tarpaulins are staged on Field 07.',
+      whatIsNeeded: `If dispatch is delayed past sunset, ensure waterproof tarpaulins are staged on ${state.fieldName || 'field'}.`,
     },
 
     // 8. Harvest Labor / Equipment Readiness
@@ -129,8 +137,8 @@ export function evaluateExecutionFeasibility(state: FarmState): ExecutionFeasibi
       category: 'HARVEST_CAPACITY',
       name: 'Labor Crew & Thresher Mobilization',
       status: 'CAUTION',
-      evidence: '2 cutter crews / 1 combine pass needed (32 qtl)',
-      details: 'Field 07 requires approximately 5 to 7 hours of cutting and threshing.',
+      evidence: `${Math.max(1, Math.ceil((state.estimatedHarvestQuintals || 25) / 16))} cutter crews / 1 combine pass needed (${state.estimatedHarvestQuintals || 25} qtl)`,
+      details: `${state.fieldName || 'Field'} requires approximately 5 to 7 hours of cutting and threshing.`,
       source: 'ICAR Farm Machinery Capacity Model',
       origin: 'DERIVED' as any,
       isBlocker: false,
@@ -157,15 +165,19 @@ export function evaluateExecutionFeasibility(state: FarmState): ExecutionFeasibi
     ((confirmedCount * 1.0 + cautionCount * 0.6 + unknownCount * 0.3) / factors.length) * 100
   );
 
-  const headline = overallStatus === 'READY' 
+  const headline = overallStatus === 'BLOCKED'
+    ? maturityPct < 80 
+      ? `Execution Blocked: ${state.crop || 'Crop'} is in developmental stage (${maturityPct.toFixed(0)}% mature)` 
+      : 'Execution Blocked by Critical Field/Weather Constraints'
+    : overallStatus === 'READY' 
     ? 'Execution Plan Verified: Ready for immediate field mobilization'
     : overallStatus === 'READY_WITH_CAUTION'
     ? 'Execution Viable with 2 Pending Confirmations (Transport & Labor)'
-    : overallStatus === 'CONSTRAINED'
-    ? 'Execution Constrained: Key logistical dependencies require farmer verification'
-    : 'Execution Blocked by Critical Field/Weather Constraints';
+    : 'Execution Constrained: Key logistical dependencies require farmer verification';
 
-  const summary = `Feasibility audit for ${state.currentDecision.title}: Crop maturity (94.6%) and Mandi quotes (₹${modalPrice}/qtl) are confirmed. Weather allows a ~36h harvest window. Transport availability and labor mobilization require explicit farmer confirmation before cutting commences.`;
+  const summary = maturityPct < 80
+    ? `Feasibility audit for ${state.currentDecision?.title || 'Decision'}: ${state.crop || 'Crop'} on ${state.fieldName || 'field'} is currently at ${maturityPct.toFixed(1)}% maturity (${state.cropStage || 'developmental'}). Harvesting now is blocked to protect crop yield.`
+    : `Feasibility audit for ${state.currentDecision?.title || 'Decision'}: Crop maturity (${maturityPct.toFixed(1)}%) and Mandi quotes (₹${modalPrice}/qtl) are confirmed. Weather allows a clear harvest window. Transport availability and labor mobilization require explicit farmer confirmation before cutting commences.`;
 
   return {
     overallStatus,

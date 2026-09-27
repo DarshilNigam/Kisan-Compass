@@ -436,48 +436,63 @@ export const seedLongitudinalDecisions: LongitudinalDecisionRecord[] = [
   },
 ];
 
-export function loadDecisionLedger(): LongitudinalDecisionRecord[] {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY_DECISIONS);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+export function loadDecisionLedger(tenantKey?: string): LongitudinalDecisionRecord[] {
+  const key = tenantKey ? `${STORAGE_KEY_DECISIONS}_${tenantKey}` : STORAGE_KEY_DECISIONS;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
       }
+    } catch (err) {
+      console.warn('[DecisionRepository] Failed to read from localStorage:', err);
     }
-  } catch (err) {
-    console.warn('[DecisionRepository] Failed to read from localStorage:', err);
+  }
+  // For a specific authenticated tenant/field, new entities must have a fresh state
+  // and must NEVER inherit seed decisions from Rameshwar Singh / Field 07
+  if (tenantKey) {
+    return [];
   }
   return seedLongitudinalDecisions;
 }
 
-export function saveDecisionLedger(decisions: LongitudinalDecisionRecord[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY_DECISIONS, JSON.stringify(decisions));
-  } catch (err) {
-    console.warn('[DecisionRepository] Failed to save to localStorage:', err);
+export function saveDecisionLedger(decisions: LongitudinalDecisionRecord[], tenantKey?: string): void {
+  const key = tenantKey ? `${STORAGE_KEY_DECISIONS}_${tenantKey}` : STORAGE_KEY_DECISIONS;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(key, JSON.stringify(decisions));
+    } catch (err) {
+      console.warn('[DecisionRepository] Failed to save to localStorage:', err);
+    }
   }
 }
 
 export function loadStoredPreferences(): ExtendedPreferenceProfile {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY_PREFS);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed.riskAversion === 'number') {
-        return parsed;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_PREFS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed.riskAversion === 'number') {
+          return parsed;
+        }
       }
+    } catch (err) {
+      console.warn('[DecisionRepository] Failed to read preferences:', err);
     }
-  } catch (err) {
-    console.warn('[DecisionRepository] Failed to read preferences:', err);
   }
   return initialExtendedPreferences;
 }
 
 export function saveStoredPreferences(prefs: ExtendedPreferenceProfile): void {
-  try {
-    localStorage.setItem(STORAGE_KEY_PREFS, JSON.stringify(prefs));
-  } catch (err) {
-    console.warn('[DecisionRepository] Failed to save preferences:', err);
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEY_PREFS, JSON.stringify(prefs));
+    } catch (err) {
+      console.warn('[DecisionRepository] Failed to save preferences:', err);
+    }
   }
 }

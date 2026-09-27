@@ -258,10 +258,13 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setOutcomeReport(CalibrationEngine.generateOutcomeReport(longitudinalDecisions));
   }, [longitudinalDecisions]);
 
-  // Sync to localStorage on update
+  // Sync to localStorage on update (tenant-isolated when authenticated)
   useEffect(() => {
-    saveDecisionLedger(longitudinalDecisions);
-  }, [longitudinalDecisions]);
+    const tenantKey = (!isDemoMode && isAuthenticated && user && state.fieldId)
+      ? `${user.id}_${state.fieldId}`
+      : undefined;
+    saveDecisionLedger(longitudinalDecisions, tenantKey);
+  }, [longitudinalDecisions, isDemoMode, isAuthenticated, user?.id, state.fieldId]);
 
   useEffect(() => {
     saveStoredPreferences(extendedPreferences);
@@ -314,40 +317,64 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data.activeCropCycle?.crop_stage
         );
 
+        // Load tenant-isolated decisions for this specific farmer and field
+        const tenantKey = `${user.id}_${data.activeField.id}`;
+        const tenantDecisions = loadDecisionLedger(tenantKey);
+        setLongitudinalDecisions(tenantDecisions);
+
         // Update core FarmState to reflect active farmer's field & crop
-        setState(prev => ({
-          ...prev,
-          farmerName: data.farmer!.full_name,
-          farmId: data.activeFarm!.id,
-          fieldId: data.activeField!.id,
-          fieldName: data.activeField!.field_name,
-          crop: data.activeCropCycle?.crop_name || 'Wheat',
-          variety: data.activeCropCycle?.crop_variety || 'Field Standard',
-          areaAcres: data.activeField!.area_acres,
-          estimatedHarvestQuintals: data.activeCropCycle?.quantity_quintals || 25,
-          sowingDate: data.activeCropCycle?.sowing_date || prev.sowingDate,
-          cropStage: agronomy.cropStage,
-          gddAccumulated: agronomy.gddAccumulated,
-          gddTarget: agronomy.gddTarget,
-          estimatedHarvestWindow: agronomy.harvestWindow,
-          location: {
-            ...prev.location,
-            village: data.activeFarm!.village,
-            district: data.activeFarm!.district,
-            state: data.activeFarm!.state,
-            coordinates: [
-              data.activeField!.latitude || data.activeFarm!.latitude, 
-              data.activeField!.longitude || data.activeFarm!.longitude
-            ],
-          },
-          soil: {
-            ...prev.soil,
-            ph: data.soilProfile?.ph || prev.soil.ph,
-            organicCarbon: data.soilProfile?.organic_carbon || prev.soil.organicCarbon,
-            source: data.soilProfile?.has_test ? 'Farmer Soil Card' : 'Regional Reference',
-            telemetry: data.soilProfile?.has_test ? 'LIVE' : 'CACHED',
-          }
-        }));
+        setState(prev => {
+          const nextState: FarmState = {
+            ...prev,
+            farmerName: data.farmer!.full_name,
+            farmId: data.activeFarm!.id,
+            fieldId: data.activeField!.id,
+            fieldName: data.activeField!.field_name,
+            crop: data.activeCropCycle?.crop_name || 'Wheat',
+            variety: data.activeCropCycle?.crop_variety || 'Field Standard',
+            areaAcres: data.activeField!.area_acres,
+            estimatedHarvestQuintals: data.activeCropCycle?.quantity_quintals || 25,
+            sowingDate: data.activeCropCycle?.sowing_date || prev.sowingDate,
+            cropStage: agronomy.cropStage,
+            gddAccumulated: agronomy.gddAccumulated,
+            gddTarget: agronomy.gddTarget,
+            estimatedHarvestWindow: agronomy.harvestWindow,
+            location: {
+              ...prev.location,
+              village: data.activeFarm!.village,
+              district: data.activeFarm!.district,
+              state: data.activeFarm!.state,
+              coordinates: [
+                data.activeField!.latitude || data.activeFarm!.latitude, 
+                data.activeField!.longitude || data.activeFarm!.longitude
+              ],
+            },
+            soil: {
+              ...prev.soil,
+              ph: data.soilProfile?.ph || prev.soil.ph,
+              organicCarbon: data.soilProfile?.organic_carbon || prev.soil.organicCarbon,
+              source: data.soilProfile?.has_test ? 'Farmer Soil Card' : 'Regional Reference',
+              telemetry: data.soilProfile?.has_test ? 'LIVE' : 'CACHED',
+            }
+          };
+
+          // Re-evaluate execution feasibility and watch state fresh for new entity
+          const freshFeasibility = evaluateExecutionFeasibility(nextState);
+          const freshPlan = generateExecutionPlan(nextState, freshFeasibility);
+          const freshDeviations = evaluateExecutionDeviations(freshPlan, {});
+          setExecutionState({
+            activePlan: freshPlan,
+            feasibility: freshFeasibility,
+            events: INITIAL_EXECUTION_EVENTS,
+            deviationReport: freshDeviations,
+            currentStepIndex: 1,
+            isSimulated: false,
+            lastUpdated: 'Just now',
+          });
+          setWatchState(createInitialFarmWatchState(nextState));
+
+          return nextState;
+        });
       } else {
         // Authenticated user with no farm/field yet: prompt onboarding!
         if (!isDemoMode) {
@@ -390,24 +417,47 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activeCycle?.crop_stage
       );
 
-      setState(prev => ({
-        ...prev,
-        fieldId: target.id,
-        fieldName: target.field_name,
-        crop: activeCycle?.crop_name || 'Wheat',
-        variety: activeCycle?.crop_variety || 'Field Standard',
-        areaAcres: target.area_acres,
-        estimatedHarvestQuintals: activeCycle?.quantity_quintals || 25,
-        sowingDate: activeCycle?.sowing_date || prev.sowingDate,
-        cropStage: agronomy.cropStage,
-        gddAccumulated: agronomy.gddAccumulated,
-        gddTarget: agronomy.gddTarget,
-        estimatedHarvestWindow: agronomy.harvestWindow,
-        location: {
-          ...prev.location,
-          coordinates: [target.latitude || prev.location.coordinates[0], target.longitude || prev.location.coordinates[1]],
-        },
-      }));
+      // Load tenant-isolated decisions for switched field
+      const tenantKey = `${user.id}_${target.id}`;
+      const tenantDecisions = loadDecisionLedger(tenantKey);
+      setLongitudinalDecisions(tenantDecisions);
+
+      setState(prev => {
+        const nextState: FarmState = {
+          ...prev,
+          fieldId: target.id,
+          fieldName: target.field_name,
+          crop: activeCycle?.crop_name || 'Wheat',
+          variety: activeCycle?.crop_variety || 'Field Standard',
+          areaAcres: target.area_acres,
+          estimatedHarvestQuintals: activeCycle?.quantity_quintals || 25,
+          sowingDate: activeCycle?.sowing_date || prev.sowingDate,
+          cropStage: agronomy.cropStage,
+          gddAccumulated: agronomy.gddAccumulated,
+          gddTarget: agronomy.gddTarget,
+          estimatedHarvestWindow: agronomy.harvestWindow,
+          location: {
+            ...prev.location,
+            coordinates: [target.latitude || prev.location.coordinates[0], target.longitude || prev.location.coordinates[1]],
+          },
+        };
+
+        const freshFeasibility = evaluateExecutionFeasibility(nextState);
+        const freshPlan = generateExecutionPlan(nextState, freshFeasibility);
+        const freshDeviations = evaluateExecutionDeviations(freshPlan, {});
+        setExecutionState({
+          activePlan: freshPlan,
+          feasibility: freshFeasibility,
+          events: INITIAL_EXECUTION_EVENTS,
+          deviationReport: freshDeviations,
+          currentStepIndex: 1,
+          isSimulated: false,
+          lastUpdated: 'Just now',
+        });
+        setWatchState(createInitialFarmWatchState(nextState));
+
+        return nextState;
+      });
     } catch (e) {
       console.error('[FarmContext] Error switching field:', e);
     }
@@ -421,6 +471,18 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (nextMode) {
       setState(initialFarmState);
       setWatchState(createInitialFarmWatchState(initialFarmState));
+      setLongitudinalDecisions(seedLongitudinalDecisions);
+      const demoFeasibility = evaluateExecutionFeasibility(initialFarmState);
+      const demoPlan = generateExecutionPlan(initialFarmState, demoFeasibility);
+      setExecutionState({
+        activePlan: demoPlan,
+        feasibility: demoFeasibility,
+        events: INITIAL_EXECUTION_EVENTS,
+        deviationReport: evaluateExecutionDeviations(demoPlan, {}),
+        currentStepIndex: 1,
+        isSimulated: false,
+        lastUpdated: '09:15 IST',
+      });
       setIsOnboardingModalOpen(false);
     } else {
       reloadFarmerData();
@@ -772,7 +834,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'STEP-03', 
         'CONFIRMED', 
         'SIMULATED', 
-        'Simulated vehicle reservation: 35 qtl trolley confirmed for Field 07 (Agreed tariff: ₹1,340).'
+        `Simulated vehicle reservation: dedicated transport confirmed for ${state.fieldName || 'field'} (Agreed tariff: ₹1,340).`
       );
       return {
         ...prev,
@@ -782,7 +844,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         lastUpdated: 'Just now',
       };
     });
-  }, []);
+  }, [state.fieldName]);
 
   const simulateHarvestStart = useCallback(() => {
     setExecutionState(prev => {
@@ -791,7 +853,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'STEP-05', 
         'IN_PROGRESS', 
         'SIMULATED', 
-        'Simulated field operation: 2 cutting crews initiated harvest on Field 07.'
+        `Simulated field operation: cutting crew initiated harvest on ${state.fieldName || 'field'}.`
       );
       return {
         ...prev,
@@ -951,20 +1013,20 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const simDecId = `DEC-SIM-${Date.now().toString().slice(-4)}`;
-    const actualGross = 32 * realizedPrice;
+    const actualGross = (state.estimatedHarvestQuintals || 32) * realizedPrice;
     const actualNet = actualGross - realizedFreight;
     const simRecord: LongitudinalDecisionRecord = {
       id: simDecId,
       timestamp: new Date().toISOString(),
-      fieldId: 'FIELD-07',
-      fieldName: 'North Plot (Field 07)',
-      crop: 'Wheat',
-      cropVariety: 'HD-2967 High Yield',
-      stage: 'Late maturity',
+      fieldId: state.fieldId || 'FIELD-07',
+      fieldName: state.fieldName || 'Active Plot',
+      crop: state.crop || 'Wheat',
+      cropVariety: state.variety || 'Standard Variety',
+      stage: state.cropStage || 'Late maturity',
       recommendation: 'SELL NOW',
       recommendedHorizonDays: 0,
       title: 'Simulated Harvest Settlement',
-      primaryRecommendation: 'Pre-storm liquidation at Unnao Mandi',
+      primaryRecommendation: `Liquidation at ${state.market.destinations[0]?.name || 'Mandi'}`,
       farmerAction: 'ACCEPTED',
       forecast: {
         p10: 68500,

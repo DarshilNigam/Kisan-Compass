@@ -84,9 +84,9 @@ export function buildMonitoredSignals(
   const rainProb = state.weather.rainfallProbability48h || 68;
   const modalPrice = state.market.modalPrice || 2380;
   const freight = 1340;
-  const gdd = 1845;
-  const targetGdd = 1950;
-  const maturityPct = +(gdd / targetGdd * 100).toFixed(1);
+  const targetGdd = state.gddTarget > 0 ? state.gddTarget : 1950;
+  const gdd = state.gddAccumulated || 0;
+  const maturityPct = targetGdd > 0 ? +(gdd / targetGdd * 100).toFixed(1) : 0;
 
   return [
     {
@@ -124,13 +124,13 @@ export function buildMonitoredSignals(
     },
     {
       id: 'SIG-WATCH-MATURITY',
-      name: 'Wheat HD-2967 Biological GDD',
+      name: `${state.crop || 'Crop'} ${state.variety ? '(' + state.variety + ')' : ''} Biological GDD`,
       category: 'MATURITY',
       currentValue: `${maturityPct}% Mature`,
-      baselineValue: '1,845 / 1,950 GDD Target',
+      baselineValue: `${gdd.toLocaleString()} / ${targetGdd.toLocaleString()} GDD Target`,
       sensitivityRegion: 'Physiologically mature at 90%',
       isDecisionSensitive: false,
-      lastShiftText: 'COMMERCIALLY HARVEST READY',
+      lastShiftText: maturityPct >= 90 ? 'COMMERCIALLY HARVEST READY' : maturityPct >= 60 ? 'DEVELOPMENTAL STAGE' : 'EARLY EMERGENCE',
       status: actionPlanHealth === 'COMPLETED' ? 'NORMAL' : 'NORMAL',
     },
   ];

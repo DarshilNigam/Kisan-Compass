@@ -142,12 +142,13 @@ export const FarmerOnboardingModal: React.FC<Props> = ({
   const [areaUnit, setAreaUnit] = useState<AreaUnit>('ACRES');
 
   // 4. Crop State
+  const todayIso = new Date().toISOString().split('T')[0];
   const [selectedCrop, setSelectedCrop] = useState('Wheat');
   const [customCrop, setCustomCrop] = useState('');
   const [cropVariety, setCropVariety] = useState('HD-2967');
   const [sowingDateChoice] = useState<'EXACT' | 'APPROXIMATE' | 'UNKNOWN'>('EXACT');
-  const [sowingDate, setSowingDate] = useState('2025-11-20');
-  const [cropStage, setCropStage] = useState('Nearly ready');
+  const [sowingDate, setSowingDate] = useState(todayIso);
+  const [cropStage, setCropStage] = useState('Just planted');
 
   // 5. Quantity State
   const [hasQuantity, setHasQuantity] = useState(true);
@@ -613,7 +614,12 @@ export const FarmerOnboardingModal: React.FC<Props> = ({
                     <button
                       key={stg.id}
                       type="button"
-                      onClick={() => setCropStage(stg.id)}
+                      onClick={() => {
+                        setCropStage(stg.id);
+                        if (stg.id === 'Just planted') {
+                          setSowingDate(new Date().toISOString().split('T')[0]);
+                        }
+                      }}
                       className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
                         cropStage === stg.id
                           ? 'bg-[#174A32] text-white border-[#174A32]'

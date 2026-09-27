@@ -38,6 +38,10 @@ export function buildTruthContracts(
   const routingAge = 35;
   const forecastAge = 25;
 
+  const targetGdd = state.gddTarget > 0 ? state.gddTarget : 1950;
+  const gddAcc = state.gddAccumulated || 0;
+  const maturityPct = targetGdd > 0 ? +((gddAcc / targetGdd) * 100).toFixed(1) : 0;
+
   const contracts: TruthContract[] = [
     // 1. Weather Feed
     {
@@ -97,7 +101,7 @@ export function buildTruthContracts(
       lastVerifiedAt: `${Math.round(soilAge / 60)}h ago`,
       ageMinutes: soilAge,
       freshnessThresholdMinutes: SOURCE_THRESHOLDS_MINUTES.soil,
-      valueDisplay: '1,845 / 1,950 GDD (94.6% Thermal Maturity)',
+      valueDisplay: `${gddAcc.toLocaleString()} / ${targetGdd.toLocaleString()} GDD (${maturityPct}% Thermal Maturity)`,
       unit: 'Growing Degree Days',
       governingRule: 'Deterministic GDD thermal accumulation and ICAR benchmark soil profile.',
     },
@@ -255,9 +259,12 @@ export function buildDecisionProofSequence(
   const postStormPriceP50 = modalPrice + 40;
   const postStormGross = quantity * postStormPriceP50;
   const postStormLoss = Math.round(grossVal * 0.22);
-  const uWait = Math.round((postStormGross - freight) - (riskAversion * postStormLoss));
   const precipMm = state.weather.forecast?.[0]?.precipitationMm || 18;
   const windKmh = state.weather.forecast?.[0]?.windKmh || 24;
+
+  const targetGdd = state.gddTarget > 0 ? state.gddTarget : 1950;
+  const gddAcc = state.gddAccumulated || 0;
+  const maturityPct = targetGdd > 0 ? +((gddAcc / targetGdd) * 100).toFixed(1) : 0;
 
   return [
     // Step 1: Field Entity
@@ -358,11 +365,11 @@ export function buildDecisionProofSequence(
       freshness: 'LIVE',
       verification: 'VERIFIED',
       confidence: 0.96,
-      primaryValue: '1,845 / 1,950 GDD (94.6% Maturity)',
+      primaryValue: `${gddAcc.toLocaleString()} / ${targetGdd.toLocaleString()} GDD (${maturityPct}% Maturity)`,
       detailRows: [
-        { label: 'Grain Moisture', value: '13.2% (Dry, APMC Grade A compliant)', isHighlighted: true },
-        { label: 'Root Zone Moisture', value: '42% Available Water Capacity' },
-        { label: 'Agronomic Assessment', value: 'Safe for commercial harvest' }
+        { label: 'Produce Moisture', value: `${state.soil.moisturePercentage}% (${maturityPct >= 88 ? 'APMC Grade A compliant' : 'High developmental moisture'})`, isHighlighted: true },
+        { label: 'Crop Stage', value: state.cropStage || 'Vegetative' },
+        { label: 'Agronomic Assessment', value: maturityPct >= 88 ? 'Safe for commercial harvest' : 'Developing; hold standing crop' }
       ],
       actionLabel: 'VIEW AGRONOMIC BENCHMARK',
       targetModal: 'PROVENANCE_DRAWER',
