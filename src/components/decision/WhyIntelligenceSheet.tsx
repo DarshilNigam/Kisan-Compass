@@ -41,6 +41,8 @@ export const WhyIntelligenceSheet: React.FC<Props> = ({
   const rainProb = state.weather.rainfallProbability48h || 68;
   const cropDisplayName = state.crop || 'crop';
   const freightCost = optimalMandi?.estimatedTransportCost ?? Math.round(200 + 25 * 38 + state.estimatedHarvestQuintals * 12);
+  const targetGdd = state.gddTarget > 0 ? state.gddTarget : 1950;
+  const maturityPct = targetGdd > 0 ? Math.min(100, Math.round(((state.gddAccumulated || 0) / targetGdd) * 100)) : 92;
 
   const factors = [
     {
@@ -63,7 +65,7 @@ export const WhyIntelligenceSheet: React.FC<Props> = ({
     },
     {
       name: 'Crop Biological Maturity',
-      value: `${Math.round(state.cropMaturityProgress || 92)}% Biological Readiness`,
+      value: `${maturityPct}% Biological Readiness`,
       impact: 'AGRONOMIC CLEARANCE',
       weight: 0.18,
       color: 'bg-emerald-700',
