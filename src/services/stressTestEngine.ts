@@ -102,7 +102,7 @@ export function runDecisionStressTest(
     robustnessExplanation = `The current SELL NOW recommendation survives moderate price changes, but flips to WAIT or SPLIT if 48h rain probability falls below ~41%.`;
   } else {
     robustness = 'FRAGILE';
-    robustnessExplanation = 'The decision is in a transition zone where a small ±3% shift in spot prices or a slight change in weather radar flips the optimal action.';
+    robustnessExplanation = 'The decision is in a transition zone where a small ±3% shift in spot prices or a slight change in weather forecast probability flips the optimal action.';
   }
 
   // Calculate What Would Change My Mind

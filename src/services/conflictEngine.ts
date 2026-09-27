@@ -41,12 +41,12 @@ export function evaluateDecisionConflicts(state: FarmState): DecisionGradeConfli
       category: 'MATURITY_VS_WEATHER',
       title: 'Biological Maturity Peak vs Approaching Storm Window',
       signalA: {
-        name: 'Crop Maturity (GDD & Moisture Sensor)',
+        name: 'Crop Maturity (GDD Benchmark Model)',
         value: `1,845 / 1,950 GDD (${gddRatio.toFixed(1)}% mature, 13.8% moisture)`,
         favorsAction: 'HARVEST NOW (Biologically Ready)',
       },
       signalB: {
-        name: 'Atmospheric Radar (Rain Window)',
+        name: 'Numerical Weather Forecast (Rain Window)',
         value: `Storm front window closes in ${state.weather.rainRiskWindowDays} days`,
         favorsAction: 'MOBILIZE COMBINE IMMEDIATELY',
       },

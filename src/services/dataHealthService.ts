@@ -32,7 +32,7 @@ export function evaluateSourceHealth(
   const isSoilOnline = state.systemStatus.soilCatalogOnline;
   const isForecastOnline = state.systemStatus.forecastEngineOnline;
 
-  // 1. Weather (Open-Meteo Ensemble)
+  // 1. Weather (Open-Meteo NWP Forecast)
   const weatherAge = snapshot?.weather.metadata.ageMinutes ?? 12;
   const weatherStatus: SourceHealthStatus = !isWeatherOnline 
     ? 'CACHED' 
@@ -42,8 +42,8 @@ export function evaluateSourceHealth(
 
   const weatherItem: SourceHealthItem = {
     id: 'SRC-WEATHER',
-    name: 'Open-Meteo Doppler Radar & Ensemble',
-    provider: 'Open-Meteo GmbH (Global Forecast System / ICON)',
+    name: 'Open-Meteo Numerical Weather Prediction (NWP)',
+    provider: 'Open-Meteo GmbH (ECMWF / DWD ICON / GFS)',
     status: weatherStatus,
     ageMinutes: weatherAge,
     freshnessThresholdMinutes: SOURCE_THRESHOLDS_MINUTES.weather,
@@ -55,7 +55,7 @@ export function evaluateSourceHealth(
     degradedImpact: 'Downgrades weather confidence; falls back to historical 72h precipitation averages.',
   };
 
-  // 2. Market (AGMARKNET APMC Daily Feed)
+  // 2. Market (AGMARKNET Modal Benchmark Reference Rates)
   const marketAge = snapshot?.market.metadata.ageMinutes ?? 18;
   const marketStatus: SourceHealthStatus = !isMarketOnline 
     ? 'CACHED' 
@@ -65,7 +65,7 @@ export function evaluateSourceHealth(
 
   const marketItem: SourceHealthItem = {
     id: 'SRC-MARKET',
-    name: 'AGMARKNET Daily APMC Price Stream',
+    name: 'AGMARKNET / DMI Modal Benchmark Reference Rates',
     provider: 'Directorate of Marketing & Inspection (DMI)',
     status: marketStatus,
     ageMinutes: marketAge,
@@ -78,7 +78,7 @@ export function evaluateSourceHealth(
     degradedImpact: 'Freezes mandi price modal to last recorded session (24h lookback).',
   };
 
-  // 3. Soil & Crop Ground Truth (ICAR Soil Portal + LoRa Station)
+  // 3. Soil & Crop Ground Truth (ICAR Soil Benchmark Profile + GDD Model)
   const soilAge = snapshot?.soil.metadata.ageMinutes ?? 180;
   const soilStatus: SourceHealthStatus = !isSoilOnline 
     ? 'CACHED' 
@@ -88,14 +88,14 @@ export function evaluateSourceHealth(
 
   const soilItem: SourceHealthItem = {
     id: 'SRC-SOIL',
-    name: 'ICAR National Soil Network + LoRa Probe #04',
-    provider: 'ICAR-IARI Soil Health Portal / Station UP-KN-892',
+    name: 'ICAR Benchmark Soil Profile & Agronomic GDD Model',
+    provider: 'ICAR-IARI Soil Health Benchmark Profile',
     status: soilStatus,
     ageMinutes: soilAge,
     freshnessThresholdMinutes: SOURCE_THRESHOLDS_MINUTES.soil,
     isWithinThreshold: soilAge <= SOURCE_THRESHOLDS_MINUTES.soil,
     lastSuccessfulFetch: `${Math.round(soilAge / 60)} hours ago`,
-    endpoint: 'icar://station-up-kn-892/lora-telemetry',
+    endpoint: 'icar://benchmark/alluvial-loam-soil-profile',
     confidence: soilStatus === 'LIVE' ? 0.96 : 0.75,
     usedBy: ['GDD Biological Maturity', 'Root Zone Moisture', 'Dockage Probability'],
     degradedImpact: 'Uses interpolated GDD accumulator from regional thermal normals.',
@@ -120,7 +120,7 @@ export function evaluateSourceHealth(
     degradedImpact: 'Assumes flat ₹38/km dedicated tractor-trolley tariff rate.',
   };
 
-  // 5. Forecast Architecture (Amazon Science Chronos / Empirical Baseline)
+  // 5. Forecast Architecture (Parameterized Mandi Baseline & Weather-Downside Quantile Estimator)
   const forecastAge = forecast?.dataFreshnessMinutes ?? 14;
   const forecastSource = forecast?.source ?? (isForecastOnline ? 'CACHED_FORECAST' : 'BASELINE');
   const forecastStatus: SourceHealthStatus = !isForecastOnline 
@@ -133,14 +133,14 @@ export function evaluateSourceHealth(
 
   const forecastItem: SourceHealthItem = {
     id: 'SRC-FORECAST',
-    name: forecast?.modelName ?? 'Historical Empirical Baseline Model',
-    provider: forecastStatus === 'LIVE' ? 'Amazon Science / Chronos Quantile Engine' : 'Historical Empirical APMC Baseline',
+    name: forecast?.modelName ?? 'Parameterized Mandi Baseline & Weather Downside Quantile Estimator',
+    provider: 'Parameterized Mandi Baseline & Weather Downside Quantile Estimator',
     status: forecastStatus,
     ageMinutes: forecastAge,
     freshnessThresholdMinutes: SOURCE_THRESHOLDS_MINUTES.forecast,
     isWithinThreshold: forecastAge <= SOURCE_THRESHOLDS_MINUTES.forecast,
     lastSuccessfulFetch: `${forecastAge} minutes ago`,
-    endpoint: forecastStatus === 'LIVE' ? 'chronos://bolt-small/inference' : 'internal://empirical-baseline/quantile-estimator',
+    endpoint: 'internal://deterministic-baseline/quantile-estimator',
     confidence: forecastStatus === 'LIVE' ? 0.91 : 0.76,
     usedBy: ['Counterfactual What-If Timeline', 'P10/P50/P90 Uncertainty Fan', 'Decision Utility Pipeline'],
     degradedImpact: 'Falls back to 5-year historical regional price distribution quantiles.',
@@ -181,7 +181,7 @@ export function computeCompositeConfidence(
 
   // Factor 3: Forecast Model Assurance
   if (forecastModelSource === 'LIVE_MODEL') {
-    factors.push({ name: 'Forecasting Pipeline', status: 'PASS', note: 'Active probabilistic neural quantile inference' });
+    factors.push({ name: 'Forecasting Pipeline', status: 'PASS', note: 'Active parameterized quantile scenario inference' });
   } else if (forecastModelSource === 'CACHED_FORECAST') {
     factors.push({ name: 'Forecasting Pipeline', status: 'WARN', note: 'Cached quantile forecast from recent inference' });
   } else {

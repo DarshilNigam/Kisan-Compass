@@ -52,7 +52,7 @@ A foundational engineering pillar of Kisan Compass is the strict separation of *
 | :--- | :--- | :--- |
 | **Financial Calculations** | LLM guesses revenue/loss (hallucination prone) | **100% Deterministic Code Execution** (P10/P50/P90 math) |
 | **Logistics & Mandi Freight**| Generic distance heuristics | **Haversine + 1.25x rural road curvature factor** |
-| **Data Provenance** | Unverified training cutoff weights | **Explicit Data Provenance tags** (`LIVE_SENSOR`, `CACHED`, `BENCHMARK`) |
+| **Data Provenance** | Unverified training cutoff weights | **Explicit Data Provenance tags** (`LIVE_FORECAST`, `CACHED`, `BENCHMARK`) |
 | **Failure Mode** | Hallucinates plausible false answers | **Graceful Confidence Degradation** ("Failure lowers confidence — never truthfulness") |
 | **Multi-Tenancy & Security** | Client-side mock state | **PostgreSQL Row-Level Security (RLS)** keyed to `auth.uid()` |
 
@@ -75,7 +75,7 @@ A foundational engineering pillar of Kisan Compass is the strict separation of *
 6. **Explainable AI Reasoning (Transparent Decision Proof)**  
    Provides step-by-step breakdown explaining *why* a particular harvest date or mandi destination was prioritized over alternatives.
 7. **Multi-Source Data Provenance & Truthfulness Badging**  
-   Every data point in the system carries an explicit provenance tag (`LIVE_SENSOR`, `CACHED`, `BENCHMARK`, `USER_STATED`) and a confidence coefficient (0.0 to 1.0).
+   Every data point in the system carries an explicit provenance tag (`LIVE_FORECAST`, `CACHED`, `BENCHMARK`, `USER_STATED`) and a confidence coefficient (0.0 to 1.0).
 8. **Graceful Degradation & Network Resilience**  
    If the device or network loses connection to live weather or market APIs, the system falls back safely to cached benchmarks, surfaces visual provenance badges, and lowers calculation confidence scores rather than failing or inventing data.
 9. **Enterprise-Grade PostgreSQL Row-Level Security (RLS)**  
@@ -111,7 +111,7 @@ flowchart TD
         Engine_Decide["Decision Engine\n(P10 / P50 / P90 Financial Risk)"]
         Engine_Harvest["Harvest Optimizer\n(Maturation Decay, Rain Hazard)"]
         Engine_Market["Net Realization Engine\n(Freight, Handling, Net Realized ₹/Q)"]
-        Engine_Prov["Provenance & Confidence Scorer\n(LIVE_SENSOR / CACHED / BENCHMARK)"]
+        Engine_Prov["Provenance & Confidence Scorer\n(LIVE_FORECAST / CACHED / BENCHMARK)"]
     end
 
     subgraph Storage ["Database Persistence (Supabase Cloud PostgreSQL)"]
@@ -164,8 +164,8 @@ Kisan Compass enforces strict database-level security policies using Supabase Po
 
 | Data Domain | Primary Source | Fallback / Offline Source | Provenance Label |
 | :--- | :--- | :--- | :--- |
-| **Hyperlocal Weather** | Open-Meteo REST API (GPS coordinates) | Regional 10-year Agro-Climatic Norms | `LIVE_SENSOR` / `CACHED` |
-| **Mandi Crop Prices** | AGMARKNET / Directorate of Marketing & Inspection | Government Minimum Support Price (MSP) / Historical Baseline | `LIVE_SENSOR` / `BENCHMARK` |
+| **Hyperlocal Weather** | Open-Meteo NWP REST API (GPS coordinates) | Regional 10-year Agro-Climatic Norms | `LIVE_FORECAST` / `CACHED` |
+| **Mandi Crop Prices** | AGMARKNET / Directorate of Marketing & Inspection | Government Minimum Support Price (MSP) / Historical Baseline | `MODAL_BENCHMARK` / `BENCHMARK` |
 | **Distance & Transit** | Haversine + 1.25x rural road curvature model | District center logistics matrix | `COMPUTED` |
 | **Farm & Field Details** | User stated via multi-step onboarding wizard | Stored in PostgreSQL multi-tenant tables | `USER_STATED` |
 
@@ -234,7 +234,7 @@ npm run build
 
 ## 📹 Project Submission Assets
 
-- **Live Demonstration Video**: [Watch the Demo Video](YOUR_PUBLIC_GOOGLE_DRIVE_LINK) *(Ensure link is set to "Anyone with the link can view")*
+- **Live Demonstration Video**: [Watch KISAN COMPASS Demo](https://drive.google.com/file/d/1jn0tRnmn1_IcAyQnNYNbBLS9DxfOw9HD/view?usp=drivesdk) *(Publicly accessible: "Anyone with the link can view")*
 - **Judge Presentation Deck**: [`KISAN_COMPASS_Final_Judge_Deck.pptx`](KISAN_COMPASS_Final_Judge_Deck.pptx)
 - **Judge Presentation PDF**: [`KISAN_COMPASS_Final_Judge_Deck.pdf`](KISAN_COMPASS_Final_Judge_Deck.pdf)
 - **Slide Visual Previews**: Located in the [`deck_preview/`](deck_preview/) directory.

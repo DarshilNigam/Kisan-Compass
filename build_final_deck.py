@@ -506,7 +506,7 @@ def main():
         title="The Persistent Farm Digital Twin",
         items=[
             "Single Source of Truth: Persistent profile anchoring real field GPS, acreage (2.5 - 15 Acres), crop variety (Sugarcane HD-2967), sowing date, and available quantity (25 Quintals).",
-            "Multi-Source Real-World APIs: Live numerical weather forecasts (Open-Meteo), benchmark mandi prices (AGMARKNET), and road logistics (OSRM routing).",
+            "Multi-Source Real-World APIs & Models: Live numerical weather forecasts (Open-Meteo), benchmark mandi prices (AGMARKNET modal rates), and geodesic road freight estimation (1.25x rural detour).",
             "Deterministic Agronomy & Economics: Growing Degree Days (GDD) crop maturity, moisture risk, and true freight costs modeled without hallucination.",
             "Human-in-the-Loop Sovereign Control: 'The system recommends with transparent evidence. The farmer makes the final decision.'",
             "Closed-Loop Evolution: Every decision is recorded into decision memory to calibrate future advice against actual harvest outcomes."
@@ -650,7 +650,7 @@ def main():
     pt_head.runs[0].font.color.rgb = COLOR_AMBER
 
     pt_tech = tf_t.add_paragraph()
-    pt_tech.text = "React 18 + TypeScript  •  Python / FastAPI  •  Supabase / PostgreSQL (Row-Level Security)  •  Open-Meteo Weather API  •  AGMARKNET / DMI Mandi API  •  Deterministic Decision Engine  •  LLM Explanation Layer"
+    pt_tech.text = "React 18 + TypeScript  •  Supabase / PostgreSQL (Row-Level Security)  •  Open-Meteo NWP Forecast API  •  AGMARKNET / DMI Mandi API  •  Deterministic Agronomy & Economic Engine  •  Grounded LLM Explanation Layer"
     pt_tech.alignment = PP_ALIGN.LEFT
     pt_tech.runs[0].font.name = "Arial"
     pt_tech.runs[0].font.size = Pt(9.5)
@@ -779,7 +779,7 @@ def main():
             "Numerical Weather Forecast: Clearly labeled 'Open-Meteo 7-day numerical forecast' — NEVER mislabeled as 'live satellite radar'.",
             "Official Market Benchmarks: Labeled 'AGMARKNET / DMI benchmark price' — NEVER fabricated as a 'live Wall Street stock ticker'.",
             "Calculated Net Realization: Defined as '(Modal Rate × Quantity) - (Freight + Unloading)' — NEVER marketed as 'guaranteed profits'.",
-            "Estimated Road Routing: Calculated via OSRM / Haversine road algorithms — NEVER faked as 'hardware GPS tracker telemetry'.",
+            "Estimated Road Routing: Calculated via geodesic Haversine distance with 1.25x rural detour factor — NEVER faked as 'hardware GPS tracker telemetry'.",
             "Agronomy Phenology: Derived from Growing Degree Day (GDD) base temperatures — NEVER claimed to be 'mind-reading AI'."
         ],
         card_type="default",
@@ -1066,7 +1066,7 @@ def main():
             "Core Member: Ritvika Srivastava",
             "Core Member: Devanshu Gupta",
             "Project Repository: KISAN COMPASS (Farm Decision Intelligence)",
-            "Architecture: React 18 • TypeScript • Python / FastAPI • Supabase RLS • Open-Meteo • AGMARKNET • OSRM Routing",
+            "Architecture: React 18 • TypeScript • Supabase RLS • Open-Meteo • AGMARKNET • Geodesic Haversine Routing",
             "Ready for Demonstration: Live database, live decision engine, and complete judge walkthrough."
         ],
         card_type="blue",

@@ -25,14 +25,13 @@ export function validateExplanationGrounding(
   }
 
   // 2. Check Forecast Source Truthfulness
-  if (context.forecast.source === 'BASELINE') {
-    if (
-      headlineUpper.includes('CHRONOS PREDICTS') ||
-      summaryUpper.includes('CHRONOS PREDICTS') ||
-      explanation.uncertaintyStatement.toUpperCase().includes('LIVE CHRONOS MODEL')
-    ) {
-      errors.push('Truthfulness violation: Claimed live Chronos model prediction when forecast source is BASELINE.');
-    }
+  if (
+    headlineUpper.includes('CHRONOS') ||
+    summaryUpper.includes('CHRONOS') ||
+    explanation.uncertaintyStatement.toUpperCase().includes('CHRONOS') ||
+    explanation.uncertaintyStatement.toUpperCase().includes('LIVE CHRONOS MODEL')
+  ) {
+    errors.push('Truthfulness violation: Claimed neural / Chronos model prediction. KISAN COMPASS uses Parameterized Mandi Baseline & Weather-Downside Quantile Estimator.');
   }
 
   // 3. Extract numbers from text and check if they exist in context (allowing minor formatting differences)

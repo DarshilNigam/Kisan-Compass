@@ -150,17 +150,20 @@ export const defaultReassessmentTriggers: ReassessmentTrigger[] = [
  */
 export function generateHarvestActionPlan(
   selectedOption: CandidateHarvestOption,
-  _state: FarmState
+  state: FarmState
 ): HarvestActionPlan {
   const isSplit = selectedOption.type === 'SPLIT';
   const isWait = selectedOption.type === 'WAIT';
 
-  let immediateAction = `Harvest and mobilize ${selectedOption.nowQuantityQuintals} quintals immediately on North Plot (Field 07).`;
+  const fieldName = state.fieldName || 'Active Field';
+  const cropName = state.crop || 'Standing Crop';
+
+  let immediateAction = `Harvest and mobilize ${selectedOption.nowQuantityQuintals} quintals immediately on ${fieldName}.`;
   let targetWindow = 'Next 36 Hours (Prior to Friday 18:00 IST)';
   let retainedAction: string | undefined = undefined;
 
   if (isWait) {
-    immediateAction = `Hold standing wheat crop on Field 07 for 5 days. Monitor radar updates.`;
+    immediateAction = `Hold standing ${cropName} crop on ${fieldName} for 5 days. Monitor weather updates.`;
     targetWindow = 'March 31 – April 02, 2026';
   } else if (isSplit) {
     immediateAction = `Mobilize combine for first lot of ${selectedOption.nowQuantityQuintals} quintals. Dispatch to ${selectedOption.nowDestinationMandi}.`;

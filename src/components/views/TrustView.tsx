@@ -64,7 +64,7 @@ export const TrustView: React.FC = () => {
       icon: Database, 
       name: '28% moisture, 68% rain risk', 
       color: '#5E9B68',
-      inputs: 'Raw sensor and satellite data',
+      inputs: 'Numerical forecast + benchmark soil profile',
       outputs: 'Field condition snapshot',
       hash: 'sha256-obs:4a192f...d8e',
       detail: 'Root-zone soil moisture is 28%, convective rain front has 68% chance within 48h, crop readiness is 94.6%.'
@@ -129,10 +129,10 @@ export const TrustView: React.FC = () => {
   // 10-Step Decision Proof Milestones
   const proofSteps = [
     { num: '01', title: 'Field Twin', detail: `${state.crop} at 94.6% maturity` },
-    { num: '02', title: 'Weather Radar', detail: `${state.weather.rainfallProbability48h}% rain front arriving within 48h` },
+    { num: '02', title: 'Weather Forecast', detail: `${state.weather.rainfallProbability48h}% rain risk within 48h` },
     { num: '03', title: 'Mandi Quotes', detail: `${state.market.destinations[0]?.name || 'Mandi'} ₹${state.market.modalPrice} quote verified` },
     { num: '04', title: 'Logistics', detail: `${state.market.destinations[0]?.distanceKm || 28} km tractor haul` },
-    { num: '05', title: 'Soil Physics', detail: `${state.soil.moisturePercentage}% root-zone moisture level` },
+    { num: '05', title: 'Soil Agronomy', detail: `${state.soil.moisturePercentage}% root-zone moisture level` },
     { num: '06', title: 'Waiting Penalty', detail: 'Wait 5 days penalty evaluated' },
     { num: '07', title: 'Earnings Calculation', detail: `Expected take-home: ₹${expectedNet.toLocaleString('en-IN')}` },
     { num: '08', title: 'Farmer Approval', detail: 'Farmer holds final decision authority' },
@@ -153,7 +153,7 @@ export const TrustView: React.FC = () => {
             <span className="text-[#93A098]">•</span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EAF3EC] text-[#174A32] text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-[#5E9B68]" />
-              <span>Grounded in live physical sensors</span>
+              <span>Grounded in verified forecasts &amp; benchmarks</span>
             </span>
           </div>
 
@@ -161,7 +161,7 @@ export const TrustView: React.FC = () => {
             Why you can trust this
           </h1>
           <p className="text-sm text-[#304238] max-w-2xl font-sans leading-relaxed">
-            No black-box guesses. Every recommendation comes from live ground sensors, verified mandi rates, and step-by-step arithmetic.
+            No black-box guesses. Every recommendation comes from numerical weather forecasts, verified mandi rates, and step-by-step arithmetic.
           </p>
         </div>
 
@@ -244,11 +244,11 @@ export const TrustView: React.FC = () => {
 
           <div className="p-4 rounded-2xl bg-[#F7F4EC] border border-[rgba(23,74,50,0.10)] space-y-1">
             <div className="flex items-center justify-between text-xs text-[#607268] font-bold">
-              <span>Soil probe</span>
+              <span>Soil profile</span>
               <span className="w-2 h-2 rounded-full bg-[#5E9B68] animate-pulse" />
             </div>
-            <div className="font-extrabold text-[#173A2A] text-sm">Probe Node #04</div>
-            <div className="text-xs text-[#7A8980]">Updated 14m ago</div>
+            <div className="font-extrabold text-[#173A2A] text-sm">ICAR Benchmark</div>
+            <div className="text-xs text-[#7A8980]">Alluvial Loam Profile</div>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#F7F4EC] border border-[rgba(23,74,50,0.10)] space-y-1">
@@ -256,8 +256,8 @@ export const TrustView: React.FC = () => {
               <span>Road routes</span>
               <span className="w-2 h-2 rounded-full bg-[#5E9B68] animate-pulse" />
             </div>
-            <div className="font-extrabold text-[#173A2A] text-sm">OSRM Matrix</div>
-            <div className="text-xs text-[#7A8980]">Live transit checks</div>
+            <div className="font-extrabold text-[#173A2A] text-sm">Haversine Matrix</div>
+            <div className="text-xs text-[#7A8980]">1.25x rural detour factor</div>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#F7F4EC] border border-[rgba(23,74,50,0.10)] space-y-1">

@@ -32,7 +32,7 @@ export const IntelligenceOrbit: React.FC<Props> = ({ onSelectNode }) => {
   const handleWeatherClick = () => {
     setSelectedProvenance({
       status: state.systemStatus.weatherApiOnline ? 'LIVE' : 'CACHED',
-      sourceName: 'Open-Meteo Doppler Radar',
+      sourceName: 'Open-Meteo Numerical Forecast',
       provider: 'Open-Meteo GmbH (ECMWF IFS / DWD ICON)',
       fetchedAt: '12m ago',
       ageMinutes: 12,
@@ -51,8 +51,8 @@ export const IntelligenceOrbit: React.FC<Props> = ({ onSelectNode }) => {
   const handleLogisticsClick = () => {
     setSelectedProvenance({
       status: 'LIVE',
-      sourceName: 'OpenRouteService Matrix & Mandi Tariff',
-      provider: 'Kanpur Transporters Union',
+      sourceName: 'Geodesic Haversine Matrix & Mandi Tariff',
+      provider: 'Deterministic Transport Tariff (1.25x Rural Detour)',
       fetchedAt: '35m ago',
       ageMinutes: 35,
       confidence: 0.91,
@@ -65,8 +65,8 @@ export const IntelligenceOrbit: React.FC<Props> = ({ onSelectNode }) => {
   const handleSoilClick = () => {
     setSelectedProvenance({
       status: state.systemStatus.soilCatalogOnline ? 'LIVE' : 'CACHED',
-      sourceName: 'ICAR LoRa Station UP-KN-892 Probe #04',
-      provider: 'ICAR-IARI Soil Health Portal',
+      sourceName: 'ICAR Benchmark Soil Profile',
+      provider: 'ICAR-IARI Soil Health Benchmark Data',
       fetchedAt: '3h ago',
       ageMinutes: 180,
       confidence: 0.96,
@@ -86,7 +86,7 @@ export const IntelligenceOrbit: React.FC<Props> = ({ onSelectNode }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-[#405048]">
             <CloudRain className="w-3.5 h-3.5 text-[#4E8FA8]" />
-            <span className="text-[10px] font-mono uppercase tracking-wider font-semibold">Weather Radar</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider font-semibold">Weather Forecast</span>
           </div>
           <span className="w-1.5 h-1.5 rounded-full bg-[#4E8FA8] living-pulse" />
         </div>
@@ -160,7 +160,7 @@ export const IntelligenceOrbit: React.FC<Props> = ({ onSelectNode }) => {
         </div>
 
         <div className="mt-2 pt-2 border-t border-black/[0.04] flex items-center justify-between text-[10px] font-mono text-[#1B5E35]">
-          <span className="font-semibold">ORS Road Matrix</span>
+          <span className="font-semibold">Haversine Matrix</span>
           <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
@@ -191,7 +191,7 @@ export const IntelligenceOrbit: React.FC<Props> = ({ onSelectNode }) => {
         </div>
 
         <div className="mt-2 pt-2 border-t border-black/[0.04] flex items-center justify-between text-[10px] font-mono text-[#1B5E35]">
-          <span className="font-semibold">ICAR Probe #04</span>
+          <span className="font-semibold">ICAR Benchmark</span>
           <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>

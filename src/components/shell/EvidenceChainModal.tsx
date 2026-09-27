@@ -117,7 +117,7 @@ export const EvidenceChainModal: React.FC<EvidenceChainModalProps> = ({
               End-to-End Decision Evidence Chain
             </h2>
             <p className="text-xs text-zinc-600">
-              Interactive trace from raw Doppler/APMC sensor telemetry down to final combine harvest execution.
+              Interactive trace from numerical weather forecasts and APMC modal benchmarks down to final combine harvest execution.
             </p>
           </div>
 

@@ -23,7 +23,7 @@ export type DataFreshness =
   | 'NOT_APPLICABLE';// Static constants, formulas, or historical records
 
 export type DataVerification = 
-  | 'VERIFIED'           // Cryptographically / physically verified (Doppler radar, ICAR probe, APMC receipt)
+  | 'VERIFIED'           // Cryptographically / officially verified (Open-Meteo NWP forecast, ICAR benchmark, APMC receipt)
   | 'PARTIALLY_VERIFIED' // Single-source verified without secondary cross-check
   | 'UNVERIFIED'         // User input, manual override, or simulated sandbox event
   | 'NOT_APPLICABLE';    // Mathematical formulas and pure definitions

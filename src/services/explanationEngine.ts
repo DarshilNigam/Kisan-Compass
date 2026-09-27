@@ -47,7 +47,7 @@ export function buildExplanationContext(
     },
     forecast: {
       source: isFailed ? 'BASELINE' : 'CACHED_FORECAST',
-      modelName: forecast?.modelName || 'Chronos-Bolt (Amazon Science) Quantile Engine',
+      modelName: forecast?.modelName || 'Parameterized Mandi Baseline & Weather Downside Quantile Estimator',
       horizonDays: currentStep.horizonDays || horizonDays,
       p10Price: currentStep.p10Price || 2340,
       p50Price: currentStep.p50Price || 2380,
@@ -98,10 +98,10 @@ export function buildExplanationContext(
       explanation: forecast?.uncertainty?.explanation || 'Uncertainty calibrated against 7-day weather variance.',
     },
     provenance: {
-      weatherProvider: 'Open-Meteo High-Res / IMD Radar Ensemble',
+      weatherProvider: 'Open-Meteo Numerical Weather Prediction (NWP)',
       marketProvider: 'Directorate of Marketing & Inspection (AGMARKNET)',
-      forecastProvider: isFailed ? 'Deterministic 5-Year Historical Climatology' : 'Chronos-Bolt Quantile Architecture',
-      soilProvider: 'ICAR-IARI Soil Network + In-Situ Probe #04',
+      forecastProvider: isFailed ? 'Deterministic 5-Year Historical Climatology' : 'Parameterized Mandi Baseline & Weather Downside Quantile Estimator',
+      soilProvider: 'ICAR Benchmark Soil Profile & Agronomic GDD Model',
     },
     conflicts: [],
   };
@@ -459,12 +459,12 @@ export function answerGroundedQuestion(
           'Plausible 90% Spread: ₹62,800 to ₹78,200',
           'Downside variance increases by +82%',
         ],
-        groundedSources: ['Chronos-Bolt Quantile Model', 'Weather Loss Decay Function'],
+        groundedSources: ['Parameterized Quantile Model', 'Weather Loss Decay Function'],
         language: 'en',
       };
     case 'HOW_CERTAIN_WEATHER':
       return {
-        question: 'How reliable is the thunderstorm radar forecast?',
+        question: 'How reliable is the numerical weather forecast?',
         questionType,
         answerHeadline: 'High confidence for next 48 hours; multi-model agreement is 91%.',
         answerBody: `Open-Meteo multi-model ensemble (ECMWF, DWD ICON, GFS) shows strong convergence on a convective front arriving late Friday night over Kanpur Nagar and Unnao.`,
@@ -481,10 +481,10 @@ export function answerGroundedQuestion(
         questionType,
         answerHeadline: context.forecast.source === 'BASELINE'
           ? 'Operating on Historical Empirical Baseline (Model Offline)'
-          : 'Chronos-Bolt Quantile Foundation Architecture',
+          : 'Parameterized Mandi Baseline & Weather Downside Quantile Estimator',
         answerBody: context.forecast.source === 'BASELINE'
-          ? 'The live Chronos forecasting engine is simulated offline. The system has switched to a 5-year empirical distribution baseline. No synthetic AI numbers are substituted.'
-          : 'Zero-shot quantile time-series forecast generated across 10th, 50th, and 90th percentiles using regional modal price history.',
+          ? 'The forecasting engine is simulated offline. The system has switched to a 5-year empirical distribution baseline. No synthetic AI numbers are substituted.'
+          : 'Parameterized quantile time-series forecast generated across 10th, 50th, and 90th percentiles using regional modal price history and weather downside penalties.',
         supportingDataPoints: [
           `Active Source: ${context.forecast.source}`,
           `Model Identifier: ${context.forecast.modelName}`,
@@ -567,7 +567,7 @@ export function answerGroundedQuestion(
         question: "Why can't you be more certain?",
         questionType,
         answerHeadline: 'Confidence is capped at MODERATE due to weather volatility and baseline forecast source.',
-        answerBody: `The system cannot responsibly claim HIGH certainty because: (1) Radar scans show an active 68% thunderstorm front with uncertain local precipitation density; (2) The price projection uses the 5-year Historical Empirical Baseline; (3) Two active decision-grade conflicts exist between storm crop dockage and post-storm market supply crunch.`,
+        answerBody: `The system cannot responsibly claim HIGH certainty because: (1) Open-Meteo numerical weather forecasts show an active 68% rain risk front with uncertain local precipitation density; (2) The price projection uses the 5-year Historical Empirical Baseline; (3) Two active decision-grade conflicts exist between storm crop dockage and post-storm market supply crunch.`,
         supportingDataPoints: [
           'Forecast Source: Historical APMC Baseline (ESTIMATED)',
           'Weather Hazard: 68% rain risk (14.5mm convective)',

@@ -308,10 +308,10 @@ export const FieldView: React.FC<FieldViewProps> = ({ onNavigateToDecision }) =>
                 </h3>
                 <span className="text-xs text-[#607268]">
                   {isDemoMode 
-                    ? 'ICAR Benchmark · Probe Node #04' 
+                    ? 'ICAR Benchmark · Field Soil Profile' 
                     : (state.soil.source.includes('Card') 
                         ? 'Farmer Soil Card · Lab Verified' 
-                        : 'ICAR District Reference · No In-Situ Sensor')}
+                        : 'ICAR District Reference · Deterministic Baseline')}
                 </span>
               </div>
             </div>

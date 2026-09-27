@@ -64,8 +64,8 @@ export const SystemIntegrityPanel: React.FC = () => {
       actionWord: 'MODEL',
       status: inventory.cachedCount === 0 ? 'VERIFIED' : 'WARN',
       runtimeAssertion: `${inventory.liveCount} / ${inventory.totalContracts} Source Contracts Live`,
-      liveMetric: 'Doppler, APMC, Soil, Route',
-      detail: 'Open-Meteo radar and AGMARKNET regulated trading feeds streaming.',
+      liveMetric: 'NWP Forecast, APMC, Soil, Route',
+      detail: 'Open-Meteo numerical forecast and AGMARKNET regulated trading feeds streaming.',
     },
     {
       stageNumber: 3,
@@ -110,7 +110,7 @@ export const SystemIntegrityPanel: React.FC = () => {
       status: 'VERIFIED',
       runtimeAssertion: 'Decision Evidence Graph Connected',
       liveMetric: 'Composite Confidence: High',
-      detail: 'Full DAG from raw Doppler radar to farmer decision utility.',
+      detail: 'Full DAG from raw weather forecast to farmer decision utility.',
     },
     {
       stageNumber: 8,

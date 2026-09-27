@@ -84,8 +84,8 @@ export const DecisionCommandBar: React.FC = () => {
         answer = `Since initial approval, rain probability dropped from 68% down to 37% (a -31% shift passing the ≤41% materiality boundary). This changed the optimal action from SELL NOW to WAIT 5 DAYS (expected gain +₹1,240 net).`;
         groundedSources = ['Continuous Farm Watch Engine', 'Materiality Sensitivity Bounds', 'Open-Meteo Ensemble'];
       } else {
-        answer = `Continuous Farm Watch confirms: Baseline parameters remain steady. Open-Meteo Doppler radar confirms 68% rain risk within 48h, and Unnao spot is ₹2,380/qtl. No decision-altering shift detected.`;
-        groundedSources = ['Continuous Farm Watch Engine', 'IMD Doppler Radar UP-KN-892'];
+        answer = `Continuous Farm Watch confirms: Baseline parameters remain steady. Open-Meteo NWP forecast confirms 68% rain risk within 48h, and Unnao spot is ₹2,380/qtl. No decision-altering shift detected.`;
+        groundedSources = ['Continuous Farm Watch Engine', 'Open-Meteo Numerical Forecast'];
       }
     } else if (q.includes('why alert') || q.includes('why did i get this alert') || q.includes('why wake me')) {
       if (watchState.pendingReassessment) {
@@ -102,14 +102,14 @@ export const DecisionCommandBar: React.FC = () => {
       answer = `Recent events that did NOT trigger alerts: (1) Unnao Mandi spot tick +₹15/qtl (0.6% change vs 14.5% threshold); (2) Local humidity fluctuations (+4% RH). These were filtered by the Hysteresis Deadband as non-material noise.`;
       groundedSources = ['Non-Material Event Log', 'Hysteresis Noise Filter (39%-43%)'];
     } else if (q.includes('more certain') || q.includes('certainty') || q.includes('why moderate')) {
-      answer = `The system assigns MODERATE confidence rather than HIGH because: (1) The forecasting engine is operating on the Historical Empirical Baseline rather than live neural inference; (2) Open-Meteo Doppler scans show a 68% convective storm entering in 48h; (3) Two active decision-grade conflicts exist between weather downside (₹3,838 risk) and post-storm market upside (+₹65/qtl).`;
+      answer = `The system assigns MODERATE confidence rather than HIGH because: (1) The forecasting engine is operating on the Historical Empirical Baseline; (2) Open-Meteo numerical weather forecasts show a 68% convective storm entering in 48h; (3) Two active decision-grade conflicts exist between weather downside (₹3,838 risk) and post-storm market upside (+₹65/qtl).`;
       groundedSources = ['Open-Meteo (12m ago)', 'APMC Feed (18m ago)', 'Empirical Baseline'];
     } else if (q.includes('why this decision') || q.includes('why recommendation')) {
       answer = `SELL NOW is recommended because immediate harvest locks in ₹74,820 net realization at Unnao Mandi before the Saturday thunderstorm. The standing wheat has reached 94.6% physiological maturity (1845 GDD), meaning further field holding gains only +₹1,240 gross while risking a ₹3,838 dockage loss.`;
-      groundedSources = ['Decision Engine (Utility 72.2)', 'ICAR GDD Probes (94.6%)', 'AGMARKNET (₹2,380/qtl)'];
+      groundedSources = ['Decision Engine (Utility 72.2)', 'ICAR GDD Model (94.6%)', 'AGMARKNET (₹2,380/qtl)'];
     } else if (q.includes('biggest uncertainty') || q.includes('dominant risk')) {
-      answer = `The dominant operational uncertainty is weather timing. Radar scans show a 68% chance of thunderstorm precipitation on March 28. If the storm shifts track or drops below 41% probability, holding for 5 days becomes mathematically viable.`;
-      groundedSources = ['Open-Meteo Radar Ensemble', 'Stress Test Sensitivity Engine'];
+      answer = `The dominant operational uncertainty is weather timing. Numerical weather predictions show a 68% chance of thunderstorm precipitation on March 28. If the storm shifts track or drops below 41% probability, holding for 5 days becomes mathematically viable.`;
+      groundedSources = ['Open-Meteo Weather Model', 'Stress Test Sensitivity Engine'];
     } else if (q.includes('change this decision') || q.includes('change my mind')) {
       answer = `Deterministic sensitivity sweeps show the decision will flip from SELL NOW to WAIT 5 DAYS if: (1) Rain probability drops to ≤41%, or (2) Unnao spot price surges by ≥+14.5% (≥₹2,725/qtl). Otherwise, SELL NOW remains robust.`;
       groundedSources = ['Stress Test Parameter Sweep', 'Conflict Resolution Engine'];
@@ -121,7 +121,7 @@ export const DecisionCommandBar: React.FC = () => {
       groundedSources = ['Decision Conflict Engine (v6.0)'];
     } else if (q.includes('unnao') || q.includes('mandi') || q.includes('closer')) {
       answer = `Unnao APMC (28 km) is selected over Kanpur Yard (14 km) because Unnao's higher spot price (₹2,380 vs ₹2,310) generates +₹2,240 more gross revenue, easily offsetting the ₹220 difference in dedicated transport cost (Net Advantage: +₹2,020).`;
-      groundedSources = ['AGMARKNET APMC Arbitrage Matrix', 'OpenRouteService Matrix'];
+      groundedSources = ['AGMARKNET APMC Arbitrage Matrix', 'Estimated Road Distance (Haversine 1.25x Factor)'];
     } else if (q.includes('not wait') || q.includes('wait 5 days')) {
       answer = `Waiting 5 days exposes the crop to a 68% storm front. While post-storm price might rise to ₹2,410 (+₹960), the expected rain dockage penalty (₹3,838) and delayed cash flow reduce farmer decision utility from 72.2 down to 69.4.`;
       groundedSources = ['Decision Utility Function', 'Rain Spoilage Penalty Model'];

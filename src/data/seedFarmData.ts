@@ -33,8 +33,8 @@ export const initialFarmState: FarmState = {
     potassiumKgHa: 215,
     organicCarbon: 0.58,
     soilType: 'Indo-Gangetic Alluvial Loam',
-    lastUpdated: '2h ago (In-situ Probe #04)',
-    source: 'ICAR Soil Network + Local In-Situ Sensor',
+    lastUpdated: '2h ago (ICAR Benchmark)',
+    source: 'ICAR Soil Network Benchmark Profile',
     telemetry: 'LIVE',
   },
   weather: {
@@ -199,7 +199,7 @@ export const initialFarmState: FarmState = {
         { name: 'Canal Release Schedule', weight: 0.50, impact: 'POSITIVE', valueText: 'Lower Ganga Canal scheduled opening 06:00', confidence: 0.90, sourceTelemetry: 'FRESH' },
       ],
       farmerAction: 'ACCEPTED',
-      preferenceDeltaApplied: 'Strengthened in-situ sensor weighting.',
+      preferenceDeltaApplied: 'Strengthened soil profile weighting.',
     },
     {
       id: 'DEC-2026-02-20',

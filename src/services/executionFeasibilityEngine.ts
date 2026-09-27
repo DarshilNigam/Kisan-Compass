@@ -31,7 +31,7 @@ export function evaluateExecutionFeasibility(state: FarmState): ExecutionFeasibi
       status: maturityPct >= 90 ? 'READY' : 'CAUTION',
       evidence: `GDD 1845 / 1950 (${maturityPct.toFixed(1)}% complete)`,
       details: 'Grain fill stage complete. Commercial grade moisture acceptable for immediate harvesting.',
-      source: 'ICAR GDD Thermal Sensors (Field 07)',
+      source: 'ICAR Benchmark GDD Accumulation Profile',
       origin: 'SYSTEM_OBSERVED',
       isBlocker: false,
       whatIsNeeded: 'Harvest recommended within next 48h to avoid over-drying and shatter loss.',
@@ -45,12 +45,12 @@ export function evaluateExecutionFeasibility(state: FarmState): ExecutionFeasibi
       status: rainProb > 50 ? 'CAUTION' : rainProb > 30 ? 'CAUTION' : 'READY',
       evidence: `${rainProb}% rain probability within 48h`,
       details: rainProb > 50
-        ? 'Open-Meteo Doppler ensemble projects convective thunderstorm front approaching March 28. ~36h clear harvest window remains before precipitation.'
+        ? 'Open-Meteo numerical weather forecast projects convective rain front approaching. ~36h clear harvest window remains before precipitation.'
         : 'Clear operational window. Low precipitation risk allows continuous cutting and threshing.',
-      source: 'Open-Meteo & IMD Doppler Radar UP-KN-892',
+      source: 'Open-Meteo 7-Day Numerical Weather Model',
       origin: 'SYSTEM_OBSERVED',
       isBlocker: false,
-      whatIsNeeded: 'Re-verify radar scan 2 hours before field entry. Threshing must conclude before rain onset.',
+      whatIsNeeded: 'Re-verify weather forecast 2 hours before field entry. Threshing must conclude before rain onset.',
     },
 
     // 3. Transit & Route

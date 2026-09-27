@@ -57,7 +57,7 @@ export const JUDGE_CHECKPOINTS: JudgeCheckpoint[] = [
     actionType: 'OPEN_MODAL',
     targetTab: 'compass',
     targetModal: 'JUDGE_PROOF',
-    expectedOutcome: '12-stage interactive lineage tree from Doppler radar to mandi receipt and evaluation hash.',
+    expectedOutcome: '12-stage interactive lineage tree from numerical weather forecast to mandi receipt and evaluation hash.',
   },
   {
     id: 'JUDGE-CP-5',

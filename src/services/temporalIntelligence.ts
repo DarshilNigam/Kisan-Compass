@@ -65,7 +65,7 @@ export function simulateDecisionChangingEvent(
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' IST',
     origin: 'SIMULATED',
     signalType: 'WEATHER',
-    title: 'Simulated Radar Weather Clearing',
+    title: 'Simulated Weather Clearing Event',
     previousValue: `${previousRain}%`,
     currentValue: `${targetRainProb}%`,
     deltaFormatted: `${targetRainProb - previousRain}%`,
@@ -76,7 +76,7 @@ export function simulateDecisionChangingEvent(
     affectedDecisionId: currentState.currentDecision.id,
     evidenceNodeIds: ['NODE-SRC-WEATHER', 'NODE-OBS-RAIN', 'NODE-SIG-WEATHER-RISK'],
     dedupKey: `SIM_WEATHER_CLEARING_${targetRainProb}`,
-    whyAlertSummary: `Radar scan detects front dissipating: Rain probability moved from ${previousRain}% to ${targetRainProb}%, crossing the decision boundary.`,
+    whyAlertSummary: `Numerical forecast model indicates front dissipating: Rain probability moved from ${previousRain}% to ${targetRainProb}%, crossing the decision boundary.`,
   };
 
   const reassessment = generateDecisionReassessment(triggerEvent, simulatedWeatherState, 'SIMULATED');

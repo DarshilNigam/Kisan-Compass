@@ -152,7 +152,7 @@ export class CalibrationEngine {
       whatWeGotRight: [
         {
           claim: '48h Storm Ingress Timing & Moisture Risk',
-          evidence: 'Predicted 68% convective rain front on Day 3 accurately verified by Doppler radar. Early harvest locked in 12% moisture grade.',
+          evidence: 'Predicted 68% convective rain front on Day 3 accurately verified by meteorological stations. Early harvest locked in 12% moisture grade.',
           impact: 'Saved ₹3,838 in commercial quality dockage deductions.'
         },
         {
@@ -162,7 +162,7 @@ export class CalibrationEngine {
         },
         {
           claim: 'Physiological Maturity Verification',
-          evidence: 'ICAR GDD probe telemetry showed 94.6% dry-matter fill; combine reported 0% green kernel penalty.',
+          evidence: 'ICAR GDD benchmark showed 94.6% dry-matter fill; combine reported 0% green kernel penalty.',
           impact: 'Eliminated premature harvest discount.'
         }
       ],
@@ -176,7 +176,7 @@ export class CalibrationEngine {
         {
           claim: 'Field Moisture Disparity on Lowland Ridge',
           evidence: 'Plot boundary section 2B exhibited 14.2% moisture vs 11.8% upland average.',
-          rootCause: 'Single point probe aggregation failed to capture micro-topography drainage differences.',
+          rootCause: 'District soil baseline did not account for micro-topography drainage differences.',
           remediation: 'Integrate multi-zone topographic moisture weighting.'
         }
       ]
@@ -186,7 +186,7 @@ export class CalibrationEngine {
       {
         assumptionName: '48h Precipitation Probability (68%)',
         assumedValue: '68% Storm Risk',
-        observedValue: '72% Radar Verified',
+        observedValue: '72% Precipitation Verified',
         status: 'VALIDATED',
         impactOnDecision: 'Accurately justified immediate harvest before rainfall.'
       },
@@ -215,7 +215,7 @@ export class CalibrationEngine {
 
     const signalAudits: SignalAuditItem[] = [
       {
-        signalName: 'Doppler Radar Scan',
+        signalName: 'Numerical Weather Forecast',
         source: 'Open-Meteo High-Res',
         availabilityRate: 0.98,
         averageForecastError: 3.8,

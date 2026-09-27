@@ -166,7 +166,7 @@ export const TruthStrip: React.FC = () => {
                 <div className="p-3 rounded-2xl bg-stone-900 border border-stone-800 space-y-1">
                   <span className="text-[10px] text-stone-400 uppercase block">LIVE SOURCES</span>
                   <div className="text-lg font-bold text-emerald-400">{inventory.liveCount} / {inventory.totalContracts}</div>
-                  <div className="text-[9px] text-stone-500">Doppler, APMC, Probe</div>
+                  <div className="text-[9px] text-stone-500">Forecast, APMC, Soil Profile</div>
                 </div>
 
                 <div className="p-3 rounded-2xl bg-stone-900 border border-stone-800 space-y-1">

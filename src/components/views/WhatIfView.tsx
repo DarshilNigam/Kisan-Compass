@@ -66,7 +66,7 @@ export const WhatIfView: React.FC = () => {
             </span>
             <span className="text-[#9AA7A0]">•</span>
             <span className="text-[11px] font-mono text-[#69776F]">
-              {isBaseline ? 'Empirical Historical Quantiles' : 'Chronos Probabilistic Inference'}
+              {isBaseline ? 'Empirical Historical Quantiles' : 'Parameterized Quantile Simulation'}
             </span>
           </div>
 

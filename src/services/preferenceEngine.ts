@@ -49,7 +49,7 @@ export const initialExtendedPreferences: ExtendedPreferenceProfile = {
       previousScore: 0.74,
       evidenceCount: 6,
       signalStrength: 'STRONG SIGNAL',
-      description: 'Weight given to IMD radar & ensemble rain forecasts for standing mature crops.',
+      description: 'Weight given to numerical weather forecast models and rain projections for standing mature crops.',
       observedPattern: 'Rejected delay when precipitation probability exceeded 60%.',
       lastUpdated: 'Mar 26, 2026',
     },
@@ -126,7 +126,7 @@ export function adaptPreferencesOnAction(
 
       case 'DISAGREE_WEATHER':
         deltaWeather = -(0.08 * dampFactor).toFixed(3); // farmer has local micro-climate confidence
-        changeSummary = `Weather disagreement noted: Radar sensitivity moderated (-${Math.round(Math.abs(deltaWeather) * 100)}%).`;
+        changeSummary = `Weather disagreement noted: Weather hazard sensitivity moderated (-${Math.round(Math.abs(deltaWeather) * 100)}%).`;
         break;
 
       case 'BETTER_LOCAL_PRICE':
@@ -184,7 +184,7 @@ export function adaptPreferencesOnAction(
       previousScore: current.weatherSensitivity,
       evidenceCount: count,
       signalStrength,
-      description: 'Weight given to IMD radar & ensemble rain forecasts for standing mature crops.',
+      description: 'Weight given to numerical weather forecast models and rain projections for standing mature crops.',
       observedPattern: `${Math.round(newWeather * 100)}% sensitivity weighting applied in decision utility.`,
       lastUpdated: 'Just now',
     },

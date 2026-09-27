@@ -45,7 +45,7 @@ export function evaluateWeatherMateriality(
       classification: 'NOISE',
       severity: 'INFO',
       isDecisionChanging: false,
-      impactExplanation: `Minor ${delta >= 0 ? '+' : ''}${delta}% rain fluctuation is within regular Doppler scan variance. No impact on decision utility.`,
+      impactExplanation: `Minor ${delta >= 0 ? '+' : ''}${delta}% rain fluctuation is within numerical forecast model run variance. No impact on decision utility.`,
       crossesDecisionBoundary: false,
     };
   }

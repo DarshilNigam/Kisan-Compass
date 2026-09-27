@@ -34,12 +34,15 @@ async function sha256(message: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Seed baseline accounts if none exist
 function getStoredUsers(): UserAccount[] {
   try {
+    // In production mode, never seed mock pilot accounts
+    if (getAppMode() === 'production') {
+      return [];
+    }
     const raw = localStorage.getItem(STORAGE_USERS_KEY);
     if (!raw) {
-      // Seed default authentic pilot farmer account
+      // Seed default authentic pilot farmer account in development/demo only
       // Default password: password123
       const defaultUsers: UserAccount[] = [
         {

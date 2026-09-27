@@ -152,9 +152,9 @@ export class EvaluationDatasetService {
         origin,
         mandi: rec.actualOutcome.mandi || 'Unnao APMC',
         provenanceChain: {
-          forecastSource: rec.forecast.source === 'LIVE_MODEL' ? 'Chronos-Bolt Engine' : 'Historical Empirical Baseline',
+          forecastSource: rec.forecast.source === 'LIVE_MODEL' ? 'Parameterized Quantile Engine' : 'Historical Empirical Baseline',
           marketSource: rec.marketSnapshot?.source || 'AGMARKNET Daily Bulletin',
-          weatherSource: rec.weatherSnapshot?.source || 'Open-Meteo Doppler Radar',
+          weatherSource: rec.weatherSnapshot?.source || 'Open-Meteo Numerical Forecast',
           settlementReceipt: `e-NAM APMC Settlement ID: ${rec.id}-SETTLE`
         }
       });

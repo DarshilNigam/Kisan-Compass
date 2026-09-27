@@ -46,7 +46,7 @@ export const SystemBar: React.FC = () => {
 
   const soilMeta = snapshot?.soil.metadata || {
     status: state.soil.telemetry,
-    sourceName: 'ICAR National Soil Network + LoRa Probe #04',
+    sourceName: 'ICAR National Soil Network Benchmark Profile',
     provider: 'ICAR-IARI Soil Health Portal',
     fetchedAt: '2h ago',
     ageMinutes: 120,
@@ -59,8 +59,8 @@ export const SystemBar: React.FC = () => {
   const forecastMeta = forecast ? {
     status: isForecastOnline ? ('LIVE' as const) : ('ESTIMATED' as const),
     sourceName: forecast.modelName,
-    provider: 'Amazon Science / Chronos-Bolt Probabilistic Quantile Engine',
-    endpoint: 'chronos://bolt-small/inference',
+    provider: 'Parameterized Mandi Baseline & Weather Downside Quantile Estimator',
+    endpoint: 'internal://deterministic-baseline/quantile-estimator',
     fetchedAt: forecast.generatedAt,
     ageMinutes: forecast.dataFreshnessMinutes,
     confidence: forecast.confidence,
@@ -70,8 +70,8 @@ export const SystemBar: React.FC = () => {
     note: forecast.provenance.note,
   } : {
     status: 'CACHED' as const,
-    sourceName: 'Chronos-Bolt Quantile Engine',
-    provider: 'Amazon Science',
+    sourceName: 'Parameterized Quantile Engine',
+    provider: 'Deterministic Baseline',
     fetchedAt: '8m ago',
     ageMinutes: 8,
     confidence: 0.89,
@@ -113,7 +113,7 @@ export const SystemBar: React.FC = () => {
           <FreshnessIndicator
             status={forecastMeta.status}
             ageMinutes={forecastMeta.ageMinutes}
-            label="CHRONOS"
+            label="FORECAST"
             onClick={() => setSelectedProvenance(forecastMeta)}
           />
 
@@ -197,7 +197,7 @@ export const SystemBar: React.FC = () => {
               <div>
                 <div className="font-mono text-[10px] text-zinc-500">FORECAST ENGINE</div>
                 <div className="font-medium text-xs">
-                  {state.systemStatus.forecastEngineOnline ? 'Chronos-Bolt Quantile' : 'Historical Baseline'}
+                  {state.systemStatus.forecastEngineOnline ? 'Parameterized Quantile' : 'Historical Baseline'}
                 </div>
               </div>
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
@@ -283,9 +283,9 @@ export const SystemBar: React.FC = () => {
               }`}
             >
               <div>
-                <div className="font-mono text-[10px] text-zinc-500">SOIL PROBE #04</div>
+                <div className="font-mono text-[10px] text-zinc-500">SOIL CATALOG</div>
                 <div className="font-medium text-xs">
-                  {state.systemStatus.soilCatalogOnline ? 'LoRa In-Situ Sensor' : 'District Benchmark'}
+                  {state.systemStatus.soilCatalogOnline ? 'ICAR Benchmark Profile' : 'Regional Norms'}
                 </div>
               </div>
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${

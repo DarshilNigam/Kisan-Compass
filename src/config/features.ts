@@ -41,13 +41,13 @@ export const FEATURES: Record<FeatureId, FeatureDefinition> = {
     id: 'field',
     name: 'Field',
     tagline: 'Your crops, soil & weather',
-    shortDescription: 'See how your crop is growing, check soil moisture, and track upcoming rain.',
-    longDescription: 'Live monitoring of Field 07 (2.4 acres, Wheat HD-2967). Real-time heat progress, root-zone soil moisture, and high-resolution rain radar.',
+    shortDescription: 'Track crop growth, inspect benchmark soil profile, and monitor 7-day numerical weather forecasts.',
+    longDescription: 'Field-specific monitoring of your active crop acreage, GDD thermal maturation progress, soil moisture profile, and Open-Meteo numerical weather predictions.',
     bullets: [
-      'Field 07 · 2.4 acres wheat',
-      'Wheat is 94.6% ready for harvest',
-      'Soil moisture at 28% (good condition)',
-      'Radar rain forecast for next 48 hours'
+      'Active field acreage & crop variety',
+      'GDD biological harvest window readiness',
+      'ICAR benchmark soil moisture profile',
+      'Open-Meteo numerical forecast for next 48 hours'
     ],
     icon: Sprout,
     badge: 'Crop & Land',
@@ -141,10 +141,10 @@ export const FEATURES: Record<FeatureId, FeatureDefinition> = {
     id: 'trust',
     name: 'Trust',
     tagline: 'Why you can rely on this',
-    shortDescription: 'Check where our numbers come from, see real sensor readings, and verify any calculation.',
-    longDescription: 'Every recommendation is grounded in live sensor readings and verified calculations. Nothing is guessed or hidden.',
+    shortDescription: 'Check where our numbers come from, inspect data provenance, and verify any calculation.',
+    longDescription: 'Every recommendation is grounded in verified meteorological forecasts, APMC benchmarks, and deterministic calculations. Nothing is guessed or hidden.',
     bullets: [
-      '5 live sources checked in real time',
+      'Verified numerical forecasts & APMC benchmarks',
       'Step-by-step reasoning for every number',
       'Past advice accuracy record',
       'Inspect any calculation anytime'

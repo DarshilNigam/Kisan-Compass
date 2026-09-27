@@ -42,7 +42,7 @@ export function buildTruthContracts(
     // 1. Weather Feed
     {
       id: 'TC-WEATHER',
-      name: 'Open-Meteo Doppler Radar & Numerical NWP Stream',
+      name: 'Open-Meteo Numerical Weather Prediction (NWP Stream)',
       category: 'SOURCE',
       origin: isWeatherOnline ? 'LIVE' : 'CACHED',
       freshness: !isWeatherOnline ? 'STALE' : weatherAge > SOURCE_THRESHOLDS_MINUTES.weather ? 'STALE' : 'LIVE',
@@ -55,7 +55,7 @@ export function buildTruthContracts(
       freshnessThresholdMinutes: SOURCE_THRESHOLDS_MINUTES.weather,
       valueDisplay: `${state.weather.rainfallProbability48h || 68}% Precipitation Risk (48h)`,
       unit: '% Probability',
-      governingRule: 'Requires live Doppler radar stream within 45 min freshness window.',
+      governingRule: 'Requires live Open-Meteo numerical weather forecast stream within 45 min freshness window.',
       limitationReason: !isWeatherOnline 
         ? 'Weather API offline. Retaining last verified cached telemetry; confidence penalized.'
         : undefined,
@@ -83,23 +83,23 @@ export function buildTruthContracts(
         : undefined,
     },
 
-    // 3. ICAR Soil & Field Station Telemetry
+    // 3. ICAR Benchmark Soil Profile & Agronomic GDD Model
     {
       id: 'TC-SOIL',
-      name: 'ICAR National Soil Network + Field 07 LoRa Probe #04',
+      name: 'ICAR Benchmark Soil Profile & Agronomic GDD Model',
       category: 'SOURCE',
       origin: isSoilOnline ? 'LIVE' : 'CACHED',
       freshness: !isSoilOnline ? 'STALE' : soilAge > SOURCE_THRESHOLDS_MINUTES.soil ? 'STALE' : 'LIVE',
       verification: 'VERIFIED',
       confidence: isSoilOnline ? 0.96 : 0.75,
-      provider: 'ICAR-IARI Soil Health Portal / Station UP-KN-892',
-      endpointOrProtocol: 'icar://station-up-kn-892/lora-probe-04',
+      provider: 'ICAR-IARI Soil Health Benchmark Profile',
+      endpointOrProtocol: 'icar://benchmark/alluvial-loam-soil-profile',
       lastVerifiedAt: `${Math.round(soilAge / 60)}h ago`,
       ageMinutes: soilAge,
       freshnessThresholdMinutes: SOURCE_THRESHOLDS_MINUTES.soil,
       valueDisplay: '1,845 / 1,950 GDD (94.6% Thermal Maturity)',
       unit: 'Growing Degree Days',
-      governingRule: 'In-situ capacitance probes calibrated to local alluvial loam.',
+      governingRule: 'Deterministic GDD thermal accumulation and ICAR benchmark soil profile.',
     },
 
     // 4. Logistics & Dedicated Rural Freight Matrix
@@ -347,12 +347,12 @@ export function buildDecisionProofSequence(
       targetPayload: 'SRC-ROUTING',
     },
 
-    // Step 5: ICAR Ground Probe Agronomy
+    // Step 5: ICAR Benchmark Soil Profile & Agronomic GDD Model
     {
       stepIndex: 5,
       nodeId: 'PROOF-STEP-05',
       title: 'Biological Maturity Verification',
-      subtitle: 'ICAR LoRa Station UP-KN-892 Probe Telemetry',
+      subtitle: 'Deterministic GDD Model & ICAR Regional Benchmark Profile',
       category: 'AGRONOMY',
       origin: state.systemStatus.soilCatalogOnline ? 'LIVE' : 'CACHED',
       freshness: 'LIVE',
@@ -364,7 +364,7 @@ export function buildDecisionProofSequence(
         { label: 'Root Zone Moisture', value: '42% Available Water Capacity' },
         { label: 'Agronomic Assessment', value: 'Safe for commercial harvest' }
       ],
-      actionLabel: 'VIEW SOIL TELEMETRY',
+      actionLabel: 'VIEW AGRONOMIC BENCHMARK',
       targetModal: 'PROVENANCE_DRAWER',
       targetPayload: 'SRC-SOIL',
     },

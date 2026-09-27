@@ -40,7 +40,7 @@ export function buildDecisionEvidenceGraph(
     {
       id: 'NODE-SRC-WEATHER',
       type: 'SOURCE',
-      label: 'Open-Meteo Doppler Feed',
+      label: 'Open-Meteo NWP Forecast',
       value: 'Live API Stream',
       source: 'Open-Meteo GmbH',
       freshness: `${weatherSource.ageMinutes}m ago`,
@@ -50,7 +50,7 @@ export function buildDecisionEvidenceGraph(
       timestamp: new Date().toISOString(),
       actionTarget: 'SHOW_PROVENANCE',
       actionPayload: 'SRC-WEATHER',
-      details: 'High-resolution radar & numerical weather prediction ensemble for UP-KN-892.',
+      details: 'Numerical weather prediction ensemble (ECMWF, DWD ICON, GFS) for field coordinates.',
     },
     {
       id: 'NODE-SRC-MARKET',
@@ -70,8 +70,8 @@ export function buildDecisionEvidenceGraph(
     {
       id: 'NODE-SRC-SOIL',
       type: 'SOURCE',
-      label: 'ICAR Ground Probe Station',
-      value: 'Station UP-KN-892',
+      label: 'ICAR Benchmark Soil Profile',
+      value: 'District Agro-Climatic Baseline',
       source: 'ICAR-IARI Soil Network',
       freshness: `${Math.round(soilSource.ageMinutes / 60)}h ago`,
       confidence: soilSource.confidence,
@@ -80,7 +80,7 @@ export function buildDecisionEvidenceGraph(
       timestamp: new Date().toISOString(),
       actionTarget: 'SHOW_PROVENANCE',
       actionPayload: 'SRC-SOIL',
-      details: 'In-situ capacitance probes recording soil temperature, moisture & thermal accumulation.',
+      details: 'Regional alluvial benchmark profile recording soil series, available water capacity, and GDD thermal time.',
     },
     {
       id: 'NODE-SRC-ROUTING',
@@ -95,13 +95,13 @@ export function buildDecisionEvidenceGraph(
       timestamp: new Date().toISOString(),
       actionTarget: 'SHOW_PROVENANCE',
       actionPayload: 'SRC-ROUTING',
-      details: 'Dedicated rural freight distance and commercial toll estimation matrix.',
+      details: 'Dedicated rural freight distance (Haversine 1.25x rural curvature) and commercial transport tariff.',
     },
     {
       id: 'NODE-SRC-FORECAST',
       type: 'SOURCE',
-      label: forecast?.modelName ?? 'Empirical Baseline Engine',
-      value: forecastSource.status === 'LIVE' ? 'Neural Quantiles' : 'Historical Quantiles',
+      label: forecast?.modelName ?? 'Parameterized Baseline Engine',
+      value: 'Parameterized Quantiles',
       source: forecastSource.provider,
       freshness: `${forecastSource.ageMinutes}m ago`,
       confidence: forecastSource.confidence,
@@ -323,9 +323,9 @@ export function buildDecisionEvidenceGraph(
 
   const edges: EvidenceEdge[] = [
     // Source -> Observation
-    { from: 'NODE-SRC-WEATHER', to: 'NODE-OBS-RAIN', relation: 'INFORMS', label: 'Doppler Scan' },
+    { from: 'NODE-SRC-WEATHER', to: 'NODE-OBS-RAIN', relation: 'INFORMS', label: 'Weather Forecast' },
     { from: 'NODE-SRC-MARKET', to: 'NODE-OBS-PRICE', relation: 'INFORMS', label: 'APMC Clearing' },
-    { from: 'NODE-SRC-SOIL', to: 'NODE-OBS-GDD', relation: 'INFORMS', label: 'Probe Telemetry' },
+    { from: 'NODE-SRC-SOIL', to: 'NODE-OBS-GDD', relation: 'INFORMS', label: 'Agronomic GDD Benchmark' },
     { from: 'NODE-SRC-ROUTING', to: 'NODE-OBS-LOGISTICS', relation: 'INFORMS', label: 'Tariff Rate' },
     { from: 'NODE-SRC-FORECAST', to: 'NODE-CALC-UTILITY', relation: 'INFORMS', label: 'P10/P50/P90 Fan' },
 
@@ -364,7 +364,7 @@ export function buildDecisionEvidenceGraph(
     rootSourceIds: ['NODE-SRC-WEATHER', 'NODE-SRC-MARKET', 'NODE-SRC-SOIL', 'NODE-SRC-ROUTING', 'NODE-SRC-FORECAST'],
     decisionNodeId: 'NODE-DECISION',
     actionNodeId: 'NODE-ACTION',
-    summaryNarrative: 'Open-Meteo Doppler scans show a 68% convective rain front, deriving a ₹3,838 storm penalty. In parallel, AGMARKNET reports ₹2,380/qtl at Unnao, netting ₹74,820 after ₹1,340 dedicated transport. With crop maturity verified at 94.6% via ICAR probes, SELL NOW achieves the highest risk-adjusted utility (72.2).',
+    summaryNarrative: 'Open-Meteo numerical weather forecasts show a 68% convective rain front, deriving a ₹3,838 storm penalty. In parallel, AGMARKNET reports ₹2,380/qtl at Unnao, netting ₹74,820 after ₹1,340 estimated transport. With crop maturity verified at 94.6% via ICAR GDD model, SELL NOW achieves the highest risk-adjusted utility (72.2).',
   };
 }
 
@@ -385,7 +385,7 @@ export function getAssumptionRegister(
       label: '48h Precipitation Probability (68%)',
       value: `${rainProb}% Storm Risk`,
       category: 'OBSERVED',
-      source: 'Open-Meteo Radar Ensemble (12m ago)',
+      source: 'Open-Meteo Weather Model (12m ago)',
       sensitivity: 'HIGH',
       decisionImpact: 'Can flip decision to WAIT if probability drops below 41%.',
       whatIfShift: 'If storm track clears, waiting 5 days gains +₹1,240 gross with zero moisture penalty.',
@@ -448,7 +448,7 @@ export function getAssumptionRegister(
       source: 'Empirical Historical Quantile Model (Internal Fallback)',
       sensitivity: 'MEDIUM',
       decisionImpact: 'Requires reporting as ESTIMATED with Moderate Confidence.',
-      whatIfShift: 'Connecting live Chronos model would tighten P10-P90 spread.',
+      whatIfShift: 'Higher sampling density would tighten P10-P90 spread.',
     },
   ];
 }

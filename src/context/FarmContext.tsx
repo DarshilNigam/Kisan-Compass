@@ -971,7 +971,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         p50: 74820,
         p90: 79200,
         horizonDays: 0,
-        modelName: 'Chronos-Bolt Quantile Engine',
+        modelName: 'Parameterized Mandi Baseline & Weather Downside Quantile Estimator',
         source: 'LIVE_MODEL',
         generatedAt: '12:00 IST',
       },

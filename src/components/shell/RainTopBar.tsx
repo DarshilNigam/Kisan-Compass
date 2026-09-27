@@ -240,10 +240,10 @@ export const RainTopBar: React.FC = () => {
 
             <div className="space-y-2 pt-1">
               {[
-                { key: 'weatherApiOnline' as const, label: 'Open-Meteo Doppler Feed', isOnline: state.systemStatus.weatherApiOnline },
-                { key: 'marketFeedOnline' as const, label: 'AGMARKNET APMC Feed', isOnline: state.systemStatus.marketFeedOnline },
-                { key: 'soilCatalogOnline' as const, label: 'ICAR Ground Probe Telemetry', isOnline: state.systemStatus.soilCatalogOnline },
-                { key: 'forecastEngineOnline' as const, label: 'Chronos Quantile Engine', isOnline: state.systemStatus.forecastEngineOnline },
+                { key: 'weatherApiOnline' as const, label: 'Open-Meteo NWP Forecast', isOnline: state.systemStatus.weatherApiOnline },
+                { key: 'marketFeedOnline' as const, label: 'AGMARKNET APMC Benchmark', isOnline: state.systemStatus.marketFeedOnline },
+                { key: 'soilCatalogOnline' as const, label: 'ICAR Benchmark Soil Profile', isOnline: state.systemStatus.soilCatalogOnline },
+                { key: 'forecastEngineOnline' as const, label: 'Parameterized Quantile Engine', isOnline: state.systemStatus.forecastEngineOnline },
               ].map((item) => (
                 <div key={item.key} className="p-2.5 rounded-xl bg-[#F7F9F7] border border-black/[0.06] flex items-center justify-between">
                   <span className="text-[11px] font-semibold text-[#102117]">{item.label}</span>

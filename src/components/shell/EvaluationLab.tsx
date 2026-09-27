@@ -510,7 +510,7 @@ export const EvaluationLab: React.FC<Props> = ({
                   <li><strong className="text-stone-200">Sample Size:</strong> Dataset contains {dataset.includedCount} eligible observations. Statistical claims are governance-grade monitoring rather than asymptotic proof.</li>
                   <li><strong className="text-stone-200">Commodity Scope:</strong> Evaluated exclusively on Rabi Wheat (HD-2967) in Uttar Pradesh. Performance cannot be assumed for perishable horticulture.</li>
                   <li><strong className="text-stone-200">Regional Corridor:</strong> Market data grounded in Kanpur-Unnao APMC mandis. Interstate freight dynamics may exhibit different volatility.</li>
-                  <li><strong className="text-stone-200">Engine Attribution:</strong> Operating on Historical Empirical Baseline v1.1. Neural Chronos execution is labeled Baseline fallback.</li>
+                  <li><strong className="text-stone-200">Engine Attribution:</strong> Operating on Historical Empirical Baseline v1.1 and Parameterized Quantile Engine. All quantile calculations are purely deterministic.</li>
                 </ul>
               </div>
             </div>
