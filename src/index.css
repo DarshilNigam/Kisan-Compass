@@ -1,0 +1,256 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --text-primary: #173A2A;
+    --text-body: #34483D;
+    --text-secondary: #607268;
+    --text-muted: #7A8980;
+    --text-disabled: #9BA79F;
+    --forest: #174A32;
+    --forest-deep: #0E3322;
+    --leaf: #5E9B68;
+    --sky: #79B8C4;
+    --sky-soft: #DDEFF1;
+    --harvest: #D88732;
+    --wheat: #E7C66A;
+    --background: #F7F4EC;
+    --surface: #FFFDF8;
+    --bg-canvas: #F7F4EC;
+    --bg-surface: #FFFDF8;
+    --bg-warm-sand: #EFE2C8;
+    --coral-alert: #D96B5F;
+  }
+
+  body {
+    background-color: #F7F4EC;
+    background-image: 
+      radial-gradient(circle at 20% 20%, rgba(94, 155, 104, 0.07) 0%, transparent 40%),
+      radial-gradient(circle at 80% 25%, rgba(121, 184, 196, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 50% 85%, rgba(216, 135, 50, 0.05) 0%, transparent 45%),
+      linear-gradient(180deg, #F7F4EC 0%, #F5F1E6 100%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    font-family: 'Nunito Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+}
+
+/* =========================================================================
+   WARM AGRICULTURAL PAPER SURFACES (Replaces Pale Cold White Glass)
+   ========================================================================= */
+
+/* Warm Solid Paper Card */
+.paper-card {
+  background: #FFFDF8;
+  color: #173A2A;
+  border-radius: 22px;
+  border: 1px solid rgba(23, 74, 50, 0.09);
+  box-shadow: 
+    0 4px 20px rgba(14, 51, 34, 0.04),
+    0 1px 3px rgba(14, 51, 34, 0.02);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.paper-card-elevated {
+  background: #FFFDF8;
+  color: #173A2A;
+  border-radius: 28px;
+  border: 1px solid rgba(23, 74, 50, 0.12);
+  box-shadow: 
+    0 12px 36px rgba(14, 51, 34, 0.06),
+    0 2px 6px rgba(14, 51, 34, 0.03);
+}
+
+/* TIER 1 — HERO SURFACE: Warm Solid Paper, High Contrast, Deep Shadow */
+.tier-hero {
+  background: #FFFDF8;
+  color: #173A2A;
+  border-radius: 28px;
+  border: 1px solid rgba(23, 74, 50, 0.12);
+  box-shadow: 
+    0 16px 44px rgba(14, 51, 34, 0.07),
+    0 2px 8px rgba(14, 51, 34, 0.02);
+  transition: box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tier-hero-dark {
+  background: linear-gradient(145deg, #174A32 0%, #0E3322 100%) !important;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 24px 60px rgba(14, 51, 34, 0.18),
+    0 4px 16px rgba(0, 0, 0, 0.10);
+  color: #FFFFFF !important;
+}
+
+/* TIER 2 — INTELLIGENCE / READING SURFACE: Clean Solid Paper */
+.tier-intelligence {
+  background: #FFFDF8;
+  color: #173A2A;
+  border-radius: 22px;
+  border: 1px solid rgba(23, 74, 50, 0.09);
+  box-shadow: 
+    0 6px 20px rgba(14, 51, 34, 0.04),
+    0 1px 3px rgba(14, 51, 34, 0.02);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tier-intelligence:hover {
+  border-color: rgba(23, 74, 50, 0.16);
+  box-shadow: 
+    0 10px 28px rgba(14, 51, 34, 0.06),
+    0 2px 6px rgba(14, 51, 34, 0.03);
+}
+
+/* TIER 3 — TECHNICAL / DATA SURFACE */
+.tier-technical {
+  background: #F7F4EC;
+  color: #173A2A;
+  border-radius: 16px;
+  border: 1px solid rgba(23, 74, 50, 0.08);
+  box-shadow: 0 2px 8px rgba(14, 51, 34, 0.03);
+}
+
+/* =========================================================================
+   GLOBAL ACCESSIBILITY & CONTRAST UTILITIES
+   ========================================================================= */
+.text-primary { color: #173A2A !important; }
+.text-body { color: #34483D !important; }
+.text-secondary { color: #607268 !important; }
+.text-muted { color: #7A8980 !important; }
+.text-disabled { color: #9BA79F !important; }
+
+.surface { background-color: #FFFDF8 !important; color: #173A2A; }
+.surface-soft { background-color: #F7F4EC !important; color: #173A2A; }
+.surface-dark { background-color: #174A32 !important; color: #FFFFFF !important; }
+
+.accent-green { color: #5E9B68 !important; }
+.accent-orange { color: #D88732 !important; }
+.accent-blue { color: #79B8C4 !important; }
+.accent-gold { color: #C47D27 !important; }
+
+/* Compass Wheel Central Disc */
+.rain-wheel-surface {
+  background: radial-gradient(circle at center, #FFFFFF 0%, #FFFDF8 100%);
+  border: 1px solid rgba(23, 74, 50, 0.12);
+  box-shadow: 
+    0 24px 60px -10px rgba(14, 51, 34, 0.09),
+    0 4px 16px -2px rgba(14, 51, 34, 0.03);
+}
+
+.rain-wheel-node {
+  background: #FFFDF8;
+  border: 1px solid rgba(23, 74, 50, 0.10);
+  box-shadow: 
+    0 6px 20px -2px rgba(14, 51, 34, 0.05);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rain-explanation-glass {
+  background: #FFFDF8;
+  border: 1px solid rgba(23, 74, 50, 0.10);
+  box-shadow: 0 16px 44px rgba(14, 51, 34, 0.06);
+  border-radius: 28px;
+}
+
+.rain-auth-glass {
+  background: #FFFDF8;
+  border: 1px solid rgba(23, 74, 50, 0.14);
+  box-shadow: 0 28px 70px -12px rgba(14, 51, 34, 0.14);
+  border-radius: 28px;
+}
+
+/* Rain Decision Surface */
+.rain-decision-surface {
+  background: #FFFDF8;
+  color: #173A2A;
+  border: 1px solid rgba(23, 74, 50, 0.12);
+  box-shadow: 
+    0 16px 44px rgba(14, 51, 34, 0.06),
+    0 2px 6px rgba(14, 51, 34, 0.03);
+}
+
+/* Glass Surface Fallbacks to Solid Paper */
+.glass-primary {
+  background: #FFFDF8;
+  color: #173A2A;
+  border: 1px solid rgba(23, 74, 50, 0.12);
+}
+
+.glass-secondary {
+  background: #F7F4EC;
+  color: #173A2A;
+  border: 1px solid rgba(23, 74, 50, 0.09);
+}
+
+.glass-clear {
+  background: #FFFDF8;
+  color: #173A2A;
+  border: 1px solid rgba(23, 74, 50, 0.08);
+}
+
+.glass-dark {
+  background: #174A32;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.rain-glass-surface {
+  background: #FFFDF8;
+  color: #173A2A;
+  border: 1px solid rgba(23, 74, 50, 0.10);
+  box-shadow: 0 6px 20px rgba(14, 51, 34, 0.04);
+}
+
+.rain-glass-surface-elevated {
+  background: #FFFDF8;
+  color: #173A2A;
+  border: 1px solid rgba(23, 74, 50, 0.15);
+  box-shadow: 0 12px 32px rgba(14, 51, 34, 0.08);
+}
+
+.rain-glass-pill {
+  background: #F7F4EC;
+  color: #173A2A;
+  border: 1px solid rgba(23, 74, 50, 0.09);
+}
+
+/* Editorial display font */
+.font-display {
+  font-family: 'Lora', Georgia, serif;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(23, 74, 50, 0.18);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(23, 74, 50, 0.32);
+}
+
+/* Accessibility: Support prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
